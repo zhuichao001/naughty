@@ -1,2 +1,2 @@
 # accept failure
-*** The true is practice ***
+The true is practice
