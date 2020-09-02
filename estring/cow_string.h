@@ -9,7 +9,6 @@ struct cow_string{
     static const int SIZE_OFFSET = 6; 
     static const int REFC_OFFSET = 2;
 
-    char c;
     char *_body;
     cow_string(){
         _body = (char*)malloc(0+EXTEND_SIZE);
@@ -21,13 +20,11 @@ struct cow_string{
     cow_string(const char* s){
         _body = NULL;
         operator=(s);
-        c = 'a';
     }
 
     cow_string(const cow_string &s){
         _body = s._body;
         _incRef();
-        c = 'b';
     }
 
     ~cow_string(){
@@ -50,7 +47,7 @@ struct cow_string{
     } 
 
 
-    cow_string operator=(const char *s){
+    cow_string& operator=(const char *s){
         if(s==NULL){
            abort();
         }
@@ -72,7 +69,7 @@ struct cow_string{
         return *this;
     }
 
-    cow_string operator=(const cow_string &s){
+    cow_string& operator=(const cow_string &s){
         _body = s._body;
         _incRef();
     }
@@ -83,7 +80,7 @@ struct cow_string{
 
     int _refCount()const{ return int(*(short*)(_body-REFC_OFFSET)); }
     int _strSize()const{ return int(*(int*)(_body-SIZE_OFFSET)); }
-    void _initRef(int c){ *(short*)(_body-REFC_OFFSET) = c; }
+    void _initRef(int n){ *(short*)(_body-REFC_OFFSET) = n; }
     void _incRef(){ ++*(short*)(_body-REFC_OFFSET); }
     void _decRef(){ --*(short*)(_body-REFC_OFFSET); }
     void _release(){
