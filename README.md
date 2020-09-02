@@ -1,2 +1,2 @@
-# accept fail
-# The true need practice
+# accept failure
+*** The true is practice
