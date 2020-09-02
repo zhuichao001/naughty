@@ -6,8 +6,12 @@
 void test(){
     cow_string s("abdddddddddddddddddddddddddc");
     cow_string t(s);
-    printf("%s\n", s.c_str());
-    printf("%s\n", t.c_str());
+    printf("%x, %s\n", s.c_str(), s.c_str());
+    printf("%x, %s\n", t.c_str(), t.c_str());
+
+    t[0] = 'A';
+    printf("%x, %s\n", s.c_str(), s.c_str());
+    printf("%x, %s\n", t.c_str(), t.c_str());
 }
 
 
