@@ -10,6 +10,7 @@ struct cow_string{
     static const int REFC_OFFSET = 2;
 
     char *_body;
+
     cow_string(){
         _body = (char*)malloc(0+EXTEND_SIZE);
         _body[0] = '\0';
@@ -45,7 +46,6 @@ struct cow_string{
         }
         return _body[i];
     } 
-
 
     cow_string& operator=(const char *s){
         if(s==NULL){

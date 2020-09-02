@@ -9,6 +9,7 @@ struct eager_string{
     static const int SIZE_OFFSET = 4; 
 
     char *_body;
+
     eager_string(){
         _body = (char*)malloc(0+EXTEND_SIZE);
         _body[0] = '\0';
@@ -59,7 +60,7 @@ struct eager_string{
 
     eager_string& operator=(const eager_string &s){
         delete [](_body-SIZE_OFFSET);
-		operator=(s._body);
+        operator=(s._body);
     }
 
     const char* c_str() const {

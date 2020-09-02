@@ -6,6 +6,7 @@ struct sso_string{
     static const int Capacity = 16;
     int size;
     char data[Capacity];
+
     sso_string():size(0){}
 
     sso_string(const char* s){
