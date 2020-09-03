@@ -13,7 +13,7 @@ struct sso_string{
         operator=(s);
     }
 
-    char & operator [](int i){
+    char& operator[](int i){
         if(i>=size){
            printf("Error, sso_string::operator[] index out of bound.\n");
            abort();
@@ -21,7 +21,7 @@ struct sso_string{
         return data[i];
     } 
 
-    sso_string operator= (const char *s){
+    sso_string& operator= (const char *s){
         size = 0;
         while(s!=NULL && *s!=0 &&size<Capacity-1){
             data[size] = *s;
