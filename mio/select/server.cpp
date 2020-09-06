@@ -31,7 +31,7 @@ int server_engine_t::start() {
 
 
 int server_engine_t::_set_prepare(struct timeval *tvp) {
-    tvp->tv_sec=30; 
+    tvp->tv_sec=2; 
     tvp->tv_usec=0;
 
     for (set<int>::iterator it=fds.begin(); it!=fds.end(); ++it) {
