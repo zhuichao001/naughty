@@ -25,8 +25,8 @@ int server_engine_t::start() {
     running = true;
     _build();
     while (running) {
-		_loop();
-	}
+        _loop();
+    }
 }
 
 
@@ -51,38 +51,38 @@ int server_engine_t::_loop() {
     _get_ready(ready_fds, &ready_num, &tv);
 
     for(int i=0; i<ready_num; ++i) {
-		iohandler_t *handler = _get_handler(ready_fds[i]);
+        iohandler_t *handler = _get_handler(ready_fds[i]);
         if(handler==NULL){
-        	fprintf(stderr, "get handler fail for fd:%d\n", ready_fds[i]);
-			continue;
+            fprintf(stderr, "get handler fail for fd:%d\n", ready_fds[i]);
+            continue;
         }
-		ioevent_t *ev = handler->readfrom();
+        ioevent_t *ev = handler->readfrom();
         _on_event(ev);
     }
 }
  
 iohandler_t* server_engine_t::_get_handler(int fd) {
-	hash_map<int, iohandler_t*>::iterator it = handlers.find(fd);
-	if(it==handlers.end()){
-		return NULL;
-	} else {
-		return it->second;
-	}
+    hash_map<int, iohandler_t*>::iterator it = handlers.find(fd);
+    if(it==handlers.end()){
+        return NULL;
+    } else {
+        return it->second;
+    }
 }
 
 int server_engine_t::_del_handler(int fd) {
-	hash_map<int, iohandler_t*>::iterator it = handlers.find(fd);
-	if(it==handlers.end()){
-		return -1;
-	} else {
-		delete it->second;
+    hash_map<int, iohandler_t*>::iterator it = handlers.find(fd);
+    if(it==handlers.end()){
+        return -1;
+    } else {
+        delete it->second;
         return 0;
-	}
+    }
 }
 
 int server_engine_t::_get_ready(int *ready_fds, int *ready_n, struct timeval *tvp) {
     if (ready_fds == NULL || ready_n == NULL || tvp==NULL) {
-		return -1;
+        return -1;
     }
 
     int ret = select(maxfd+1, &fdset, NULL, NULL, tvp);
@@ -102,30 +102,30 @@ int server_engine_t::_get_ready(int *ready_fds, int *ready_n, struct timeval *tv
            *ready_n += 1;
         }
     }
-	return *ready_n;
+    return *ready_n;
 }
 
 int server_engine_t::_on_event(ioevent_t *ev) {
-	if (ev->type==EV_CONN) {
+    if (ev->type==EV_CONN) {
         FD_SET(ev->fd, &fdset);
         fds.insert(ev->fd);
         handlers[ev->fd] = new ciohandler_t(ev->fd);
-	} else if (ev->type==EV_DISCONN) {
+    } else if (ev->type==EV_DISCONN) {
         close(ev->fd);
         FD_CLR(ev->fd, &fdset);
         fds.erase(ev->fd);
         _del_handler(ev->fd); 
-	} else if (ev->type==EV_DATA_IN) {
+    } else if (ev->type==EV_DATA_IN) {
         fprintf(stdout, "IN: %s\n", ev->buff);
-		//TODO  put data=> session
-	} else if (ev->type==EV_DATA_OUT) {
+        //TODO  put data=> session
+    } else if (ev->type==EV_DATA_OUT) {
     }
-	return 0;
+    return 0;
 }
 
 
 int main(int argc,char *argv[]) {
     server_engine_t svr("127.0.0.1", 9033);
     svr.start();
-	return 0;
+    return 0;
 }

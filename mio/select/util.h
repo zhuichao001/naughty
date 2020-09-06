@@ -24,7 +24,7 @@ int bind_port(int fd, const char* ip, int port) {
         perror("bind error: ");
         return -1;
     }
-	return 0;
+    return 0;
 }
 
 
@@ -32,7 +32,7 @@ int set_reuseaddr(int fd, int reuse) {
     if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) == -1) {
         return -1;
     }
-	return 0;
+    return 0;
 }
 
 
@@ -41,7 +41,7 @@ int set_unblocking(int fd, int on) {
     if (ret < 0) {
         perror("ioctl() failed");
         close(fd);
-		return ret;
+        return ret;
     }
-	return 0;
+    return 0;
 }

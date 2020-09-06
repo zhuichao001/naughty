@@ -17,10 +17,10 @@
 using namespace __gnu_cxx;
 using namespace std;
 
-const int MAX_CONN_NUMS	= 1024;
+const int MAX_CONN_NUMS    = 1024;
 
 enum evtype_t {
-	EV_DATA_IN = 1,
+    EV_DATA_IN = 1,
     EV_DATA_OUT = 2, 
     EV_CONN = 3,
     EV_DISCONN = 4,
@@ -53,33 +53,33 @@ class ioevent_t {
 
 class iohandler_t {
   public:
-	virtual ioevent_t* readfrom() {return NULL;};
-	virtual int writeto() {return 0;};
+    virtual ioevent_t* readfrom() {return NULL;};
+    virtual int writeto() {return 0;};
 };
 
 class ciohandler_t : public iohandler_t {
   public:
     ciohandler_t(int d):_fd(d){}
-	virtual ioevent_t* readfrom() {
+    virtual ioevent_t* readfrom() {
         const int LINE_SIZE = 512;
         ioevent_t *e = new ioevent_t(_fd, EV_DATA_IN, LINE_SIZE);
         int n = read(_fd, e->buff, LINE_SIZE);
         if (n <= 0) {
             delete e;
             fprintf(stderr,"client: server is closed.\n");
-			e = new ioevent_t(_fd, EV_DISCONN);
+            e = new ioevent_t(_fd, EV_DISCONN);
         }
         return e;
     }
-	virtual int writeto() {}
+    virtual int writeto() {}
   private:
-	int _fd;
+    int _fd;
 };
 
 class siohandler_t : public iohandler_t {
   public:
     siohandler_t(int d):_fd(d){}
-	virtual ioevent_t* readfrom() {
+    virtual ioevent_t* readfrom() {
         struct sockaddr_in addr;
         socklen_t addrlen = sizeof(addr);
         int cfd = accept(_fd,(struct sockaddr*)&addr, &addrlen);
@@ -94,11 +94,11 @@ class siohandler_t : public iohandler_t {
         fprintf(stdout, "accept a new client: %s:%d\n", inet_ntoa(addr.sin_addr), addr.sin_port);
 
         ioevent_t *e = new ioevent_t(cfd, EV_CONN);
-	    return e;
-	}
-	virtual int writeto() {return 0;}
+        return e;
+    }
+    virtual int writeto() {return 0;}
   private:
-	int _fd;
+    int _fd;
 };
 
 
@@ -106,7 +106,7 @@ class server_engine_t {
   public:
     server_engine_t(const char *_ip, const int _port) :ip(_ip),port(_port) {
         FD_ZERO(&fdset);
-		running = false;
+        running = false;
     }
     int start();
 
