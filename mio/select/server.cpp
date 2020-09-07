@@ -41,13 +41,13 @@ int server_engine_t::_set_prepare(struct timeval *tvp) {
 
 }
 
+
 int server_engine_t::_loop() {
     struct timeval tv;
     _set_prepare(&tv);
 
     int ready_fds[fds.size()];
     int ready_num = 0;
-
     _get_ready(ready_fds, &ready_num, &tv);
 
     for(int i=0; i<ready_num; ++i) {
@@ -61,6 +61,7 @@ int server_engine_t::_loop() {
     }
 }
  
+
 iohandler_t* server_engine_t::_get_handler(int fd) {
     hash_map<int, iohandler_t*>::iterator it = handlers.find(fd);
     if(it==handlers.end()){
@@ -69,6 +70,7 @@ iohandler_t* server_engine_t::_get_handler(int fd) {
         return it->second;
     }
 }
+
 
 int server_engine_t::_del_handler(int fd) {
     hash_map<int, iohandler_t*>::iterator it = handlers.find(fd);
@@ -80,18 +82,18 @@ int server_engine_t::_del_handler(int fd) {
     }
 }
 
+
 int server_engine_t::_get_ready(int *ready_fds, int *ready_n, struct timeval *tvp) {
     if (ready_fds == NULL || ready_n == NULL || tvp==NULL) {
         return -1;
     }
 
     int ret = select(maxfd+1, &fdset, NULL, NULL, tvp);
-    if (ret == 0) {
-        fprintf(stdout, "select is timeout.\n");
+    if (ret == 0) { //TIME_OUT
         return 0;
     } else if (ret == -1) {
         fprintf(stderr, "select error:%s.\n", strerror(errno));
-        return errno;
+        return -1;
     }
 
     *ready_n = 0;
@@ -105,20 +107,25 @@ int server_engine_t::_get_ready(int *ready_fds, int *ready_n, struct timeval *tv
     return *ready_n;
 }
 
+
 int server_engine_t::_on_event(ioevent_t *ev) {
     if (ev->type==EV_CONN) {
+        fprintf(stdout, "EV_CONN, fd:%d\n", ev->fd);
         FD_SET(ev->fd, &fdset);
         fds.insert(ev->fd);
         handlers[ev->fd] = new ciohandler_t(ev->fd);
     } else if (ev->type==EV_DISCONN) {
+        fprintf(stdout, "EV_DISCONN, fd:%d\n", ev->fd);
         close(ev->fd);
         FD_CLR(ev->fd, &fdset);
         fds.erase(ev->fd);
         _del_handler(ev->fd); 
     } else if (ev->type==EV_DATA_IN) {
-        fprintf(stdout, "IN: %s\n", ev->buff);
-        //TODO  put data=> session
+        fprintf(stdout, "EV_DATA_IN, fd:%d, buff: %s\n", ev->fd, ev->buff);
+        iohandler_t *handler =_get_handler(ev->fd); 
+        handler->writeto(ev->buff, ev->len);
     } else if (ev->type==EV_DATA_OUT) {
+		//TODO
     }
     return 0;
 }

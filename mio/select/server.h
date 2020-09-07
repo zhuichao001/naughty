@@ -20,10 +20,10 @@ using namespace std;
 const int MAX_CONN_NUMS    = 1024;
 
 enum evtype_t {
-    EV_DATA_IN = 1,
-    EV_DATA_OUT = 2, 
-    EV_CONN = 3,
-    EV_DISCONN = 4,
+    EV_DATA_IN     = 1,
+    EV_DATA_OUT    = 2, 
+    EV_CONN        = 3,
+    EV_DISCONN     = 4,
 };
 
 class ioevent_t {
@@ -39,12 +39,14 @@ class ioevent_t {
             buff = NULL;
         }
     }
+
     ~ioevent_t(){
         if(buff) {
             delete buff;
             buff = NULL;
         }
     }
+
     evtype_t type;
     int fd;
     char *buff;
@@ -54,14 +56,14 @@ class ioevent_t {
 class iohandler_t {
   public:
     virtual ioevent_t* readfrom() {return NULL;};
-    virtual int writeto() {return 0;};
+    virtual int writeto(char *buff, const int len) {return 0;};
 };
 
 class ciohandler_t : public iohandler_t {
   public:
     ciohandler_t(int d):_fd(d){}
     virtual ioevent_t* readfrom() {
-        const int LINE_SIZE = 512;
+        static const int LINE_SIZE = 512;
         ioevent_t *e = new ioevent_t(_fd, EV_DATA_IN, LINE_SIZE);
         int n = read(_fd, e->buff, LINE_SIZE);
         if (n <= 0) {
@@ -71,7 +73,17 @@ class ciohandler_t : public iohandler_t {
         }
         return e;
     }
-    virtual int writeto() {}
+    virtual int writeto(char *buff, const int len) {
+        int n = write(_fd, buff, len);
+        if(n<=0){
+            if(errno==EINTR){
+                return writeto(buff, len);
+            }else{
+                return -1;
+            }
+        }
+        return n;
+    }
   private:
     int _fd;
 };
@@ -96,11 +108,10 @@ class siohandler_t : public iohandler_t {
         ioevent_t *e = new ioevent_t(cfd, EV_CONN);
         return e;
     }
-    virtual int writeto() {return 0;}
+    virtual int writeto(char *buff, const int len) {return 0;}
   private:
     int _fd;
 };
-
 
 class server_engine_t {
   public:
