@@ -41,7 +41,6 @@ int set_unblocking(int fd, int on) {
     if (ret < 0) {
         perror("ioctl() failed");
         close(fd);
-        return ret;
     }
-    return 0;
+    return ret;
 }
