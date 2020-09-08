@@ -153,10 +153,3 @@ int server_engine_t::_on_event(ioevent_t *ev, iohandler_t *h) {
     }
     return 0;
 }
-
-
-int main(int argc,char *argv[]) {
-    server_engine_t svr("127.0.0.1", 9033);
-    svr.start();
-    return 0;
-}
