@@ -19,9 +19,9 @@ int main(){
         exit(-1);
     }
 
-    key_t key = 117;
+    key_t IPC_KEY = 0x319384;
     const int SHM_SIZE = 1+26;
-    int shmid = shmget(key, SHM_SIZE, 0666);
+    int shmid = shmget(IPC_KEY, SHM_SIZE, 0666);
     if(shmid < 0){
         perror("failure in shmget");
         exit(-1);
