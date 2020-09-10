@@ -13,11 +13,12 @@ int read_from_fifo(const char* fifokey){
         return -1;
     }
 
-    const BUFF_SIZE = 16;
-    char buf[BUFF_SIZE];
+    const int BUFF_SIZE = 16;
+    char buf[BUFF_SIZE+1];
     int n = 0;
     while((n = read(fd, buf, BUFF_SIZE))){
-        printf(":::%s", buf);
+        buf[n]='\0';
+        printf(":::%s\n", buf);
     }
 
     close(fd);

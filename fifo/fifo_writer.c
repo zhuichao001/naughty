@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -7,7 +8,7 @@
 
 
 int make_fifo(const char* fifokey){
-    if(mkfifo(fifokey, 0644) == -1){
+    if(mkfifo(fifokey, 0644) == -1 && errno != EEXIST){
         perror("mkfifo error");
         return -1;
     }
@@ -34,6 +35,7 @@ int copy_to_fifo(const char* path, const char* fifokey){
         return -1;
     }
 
+    make_fifo(fifokey);
     int destfd = open(fifokey,O_WRONLY);
     if(destfd == -1){
         perror("open fifo error");
@@ -57,7 +59,7 @@ int main(int argc, char **argv) {
     }
 
     const char* path = argv[1];
-    const char* fifokey = (argc==3)?argv[2]:"fifo.key";
+    const char* fifokey = argv[2];
     copy_to_fifo(path, fifokey);
     return 0;
 }
