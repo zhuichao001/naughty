@@ -1,6 +1,7 @@
-//POSIX record locks (fcntl)
-//associated with an [i-node, pid] pair
-//synchronize processes, but not threads
+/*POSIX record locks (fcntl).
+**associated with an [i-node, pid] pair.
+**synchronize processes, but not threads.
+*/
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -40,8 +41,8 @@ int unlock(struct flock *lock, int fd){
     return 0;
 }
 
-void dwait(int t){
-    for(int i=0; i<t; ++i){
+void disp_wait(int seconds){
+    for(int i=0; i<seconds; ++i){
         sleep(1);
         fprintf(stderr, ".");
     }
@@ -67,14 +68,14 @@ int main(int argc, char **argv){
 
     struct flock fl;
     rlock(&fl, fd, 0, 10);
-    try_write(fd); //verify write access
-    fprintf(stderr, "have get read lock, wait 10s:");
-    dwait(10);
+    //try_write(fd); //verify write access
+    fprintf(stderr, "read lock ok. wait 10s:");
+    disp_wait(10);
     unlock(&fl, fd);
 
     wlock(&fl, fd, 20,10);
-    fprintf(stderr, "have get write lock, wait 10s:");
-    dwait(10);
+    fprintf(stderr, "write lock ok. wait 10s:");
+    disp_wait(10);
     unlock(&fl, fd);
 
     close(fd);
