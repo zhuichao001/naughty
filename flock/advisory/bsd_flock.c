@@ -50,7 +50,7 @@ void unlock(int fd) {
 int main(){
     int fd = wlock("ab.txt", 0);
     try_write(fd);
-    enter_wait();
+    wait_enter();
     unlock(fd);
     return 0;
 }

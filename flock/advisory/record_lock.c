@@ -54,12 +54,12 @@ int main(int argc, char **argv){
     rlock(&fl, fd, 0, 10);
     //try_write(fd); //verify write access
     fprintf(stderr, "read lock ok. wait 10s:");
-    disp_wait(10);
+    wait_time(10);
     unlock(&fl, fd);
 
     wlock(&fl, fd, 20,10);
     fprintf(stderr, "write lock ok. wait 10s:");
-    disp_wait(10);
+    wait_time(10);
     unlock(&fl, fd);
 
     close(fd);

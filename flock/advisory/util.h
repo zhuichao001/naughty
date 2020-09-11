@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void disp_wait(int seconds){
+void wait_time(int seconds){
     for(int i=0; i<seconds; ++i){
         sleep(1);
         fprintf(stderr, ".");
@@ -8,7 +8,7 @@ void disp_wait(int seconds){
     fprintf(stderr, "\n");
 }
 
-void enter_wait(){
+void wait_enter(){
     fprintf(stderr, "Press Enter:"); 
     char c;
     scanf("%c",&c);
