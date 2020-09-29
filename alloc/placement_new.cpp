@@ -4,7 +4,6 @@
 using namespace std;
 
 
-
 int main() {
     char buf[sizeof(Ping)*128];
     Ping *ping = new(buf)Ping(2);
