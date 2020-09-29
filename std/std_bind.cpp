@@ -1,7 +1,6 @@
 #include <iostream>
 #include <functional>
 
-//using namespace std;
 
 void func(int x, int y) {
     std::cout << x << " " << y << std::endl;
