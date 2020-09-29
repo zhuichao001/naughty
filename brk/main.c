@@ -11,37 +11,32 @@ char *fmalloc(int n) {
 	return mem;
 }
 
-int main(void)
-{
-	void *tret;
-	char *pmem, *pmem2, *pmem3;
-
-	tret = sbrk(0);
-	if (tret != (void *)-1) {
-		printf ("heap start: %p\n", tret);
+int main(void) {
+	void *hstart = sbrk(0);
+	if (hstart != (void *)-1) {
+		printf ("heap start: %p\n", hstart);
 	}
 
-	pmem = fmalloc(64); //get 0x20ff8 space
-	tret = sbrk(0);
-	if (tret != (void *)-1) {
-		printf ("pmem:%p, heap end:%d, heap size on each load: %p\n", pmem, tret, (char *)tret-pmem);
+	char *pmem = fmalloc(64);
+	hstart = sbrk(0);
+	if (hstart != (void *)-1) {
+		printf ("pmem:%p, heap end:%d, heap size on each load: %p\n", pmem, hstart, (char *)hstart-pmem);
 	}
-
-	pmem2 = fmalloc(64); //reuse 0x20ff8 space
-	tret = sbrk(0);
-	if (tret != (void *)-1) {
-		printf ("pmem2:%p, heap end:%d, heap size on each load: %p\n", pmem2, tret, (char *)tret-pmem2);
-	}
-
-
-	pmem3 = fmalloc(131*1024); //mmap asign space
-	tret = sbrk(0);
-	if (tret != (void *)-1) {
-		printf ("pmem3:%p, heap end:%d, heap size on each load: %p\n", pmem3, tret, (char *)tret-pmem3);
-	}
-
 	free(pmem);
+
+	char *pmem2 = fmalloc(128);
+	hstart = sbrk(0);
+	if (hstart != (void *)-1) {
+		printf ("pmem2:%p, heap end:%d, heap size on each load: %p\n", pmem2, hstart, (char *)hstart-pmem2);
+	}
 	free(pmem2);
+
+	char *pmem3 = fmalloc(132*1024); //mmap asign space
+	hstart = sbrk(0);
+	if (hstart != (void *)-1) {
+		printf ("pmem3:%p, heap end:%d, heap size on each load: %p\n", pmem3, hstart, (char *)hstart-pmem3);
+	}
 	free(pmem3);
+
 	return 0;
 }
