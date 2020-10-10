@@ -2,6 +2,7 @@
 #include<algorithm>
 #include<vector>
 
+
 void case_find() {
     int arr[] = {1, 3, 5, 5, 7, 8, 3, 5, 5};	
     int len = sizeof(arr)/sizeof(arr[0]);

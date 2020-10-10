@@ -23,12 +23,10 @@ void case_search() {
     if (it != vec.end()) std::cout << "needle found at:" << (it-vec.begin()) << '\n';
 
     it = std::search_n(vec.begin(), vec.end(), 2, 30);
-    if (it != vec.end())
-        std::cout << "two 30s found at position " << (it-vec.begin()) << '\n';
-    else
-        std::cout << "two 30s match not found\n";
+    if (it != vec.end()) std::cout << "two 30s found at:" << (it-vec.begin()) << '\n';
 }
 
 int main(){
     case_search();
+    return 0;
 }
