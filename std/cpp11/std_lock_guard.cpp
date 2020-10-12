@@ -5,7 +5,7 @@
 int g_count = 0;
 std::mutex g_mutex;
  
-void safe_increment() {
+void exclusive_increment() {
     const std::lock_guard<std::mutex> lock(g_mutex);
 
     for(int i=0;i<1000000;++i) g_count++;
@@ -17,8 +17,8 @@ void safe_increment() {
 int main() {
     std::cout << "at the beginning: " << g_count << '\n';
  
-    std::thread t1(safe_increment);
-    std::thread t2(safe_increment);
+    std::thread t1(exclusive_increment);
+    std::thread t2(exclusive_increment);
  
     t1.join();
     t2.join();
