@@ -2,11 +2,11 @@
 
 
 struct spin_lock {
+    spin_lock(void) throw() : is_locked(ATOMIC_VAR_INIT(false)) { }
     spin_lock(const spin_lock &) throw() = delete;
     spin_lock &operator=(const spin_lock &) throw() = delete;
-    ~spin_lock(void) throw() = default;
 
-    spin_lock(void) throw() : is_locked(ATOMIC_VAR_INIT(false)) { }
+    ~spin_lock(void) throw() = default;
 
     inline void acquire(void) throw() {
         for(;;) {
