@@ -6,6 +6,7 @@ all:
 	g++ -g -Wall -std=c++11 -o test_shared_from_this std_shared_from_this.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_lock_guard std_lock_guard.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_thread_local thread_local.cpp  
+	g++ -g -Wall -std=c++11 -pthread -o test_atomic std_atomic.cpp  
 clean:
 	rm -f test_move
 	rm -f test_bind
@@ -14,3 +15,4 @@ clean:
 	rm -f test_shared_from_this
 	rm -f test_lock_guard
 	rm -f test_thread_local
+	rm -f test_atomic
