@@ -29,9 +29,7 @@ class Derived : public Base{
 
 
 int main(){
-    Base *b;
-    Derived d;
-    b = &d;
+    Base *b = new Derived;
     b->Read('a'); //Derived::Read a
     b->Write('b'); //Base::Write b
     return 0;
