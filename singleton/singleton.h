@@ -1,3 +1,6 @@
+#ifndef _SINGLETON_H_ 
+#define _SINGLETON_H_ 
+
 #include "noncopyable.h"
 
 template <class T>
@@ -25,3 +28,5 @@ public:
 
 template <class T>  
 T * singleton<T>::_inst = nullptr;
+
+#endif
