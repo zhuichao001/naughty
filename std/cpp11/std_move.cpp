@@ -3,7 +3,8 @@
 #include <string>
 #include <utility>
 
-void test_std_move() {
+//purpose: avoid copy
+void std_move_case() {
     std::string str = "Hello, world.";
     std::vector<std::string> v;
  
@@ -18,6 +19,6 @@ void test_std_move() {
 
 
 int main(){
-    test_std_move();
+    std_move_case();
     return 0;
 }
