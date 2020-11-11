@@ -1,22 +1,22 @@
-#include "placement_new.h"
+#include "types.h"
 #include <iostream>
 
 using namespace std;
 
 
 int main() {
-    char buf[sizeof(Ping)*128];
-    Ping *ping = new(buf)Ping(2);
-    ping->print();
-    ping->~Ping();
+    char buf[sizeof(Base)*128];
+    Base *b = new(buf)Base(2);
+    b->print();
+    b->~Base();
 
-    Ping *pings = new(buf)Ping(); //replacement new
+    Base *bs = new(buf)Base(); //replacement new
     for(int i=0; i<128; ++i){
-        new(pings+i)Ping(i);
+        new(bs+i)Base(i);
     }
 
     for(int i=119; i>=0; --i){
-        (pings+i)->~Ping();
+        (bs+i)->~Base();
     }
     return 0;
 }
