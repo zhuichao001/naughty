@@ -3,6 +3,7 @@
 
 using namespace std;
 
+//function wrapper
 std::function<int(int)> mathcall;
 
 int normal(int k) {

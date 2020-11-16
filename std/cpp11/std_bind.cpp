@@ -7,7 +7,8 @@ void func(int x, int y) {
 }
 
 int main() {
-    bind(func, std::placeholders::_1, 2)(1); //func(1,2)
+    //function adpter
+    std::bind(func, std::placeholders::_1, 2)(1); //func(1,2)
 
     std::function<void(int, int)> fb = std::bind(func, std::placeholders::_1, std::placeholders::_2);
     fb(10, 20); //func(10,20);
