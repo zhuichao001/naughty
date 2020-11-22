@@ -9,12 +9,11 @@
 #include <assert.h>
 
 #if defined(__GNUC__) || defined(__x86_64__)
-    #define COMPILER_BARRIER() __asm__ __volatile("" : : : "memory")
-    #define MEMORY_BARRIER() __asm__ __volatile__("mfence": : : "memory")
-
-    #define smp_mb() MEMORY_BARRIER()
-    #define smp_rmb() COMPILER_BARRIER()
-    #define smp_wmb() COMPILER_BARRIER()  
+#define COMPILER_BARRIER() __asm__ __volatile("" : : : "memory")
+#define MEMORY_BARRIER() __asm__ __volatile__("mfence": : : "memory")
+#define smp_mb() MEMORY_BARRIER()
+#define smp_rmb() COMPILER_BARRIER()
+#define smp_wmb() COMPILER_BARRIER()  
 #endif
 
 #define min(x,y) ((x)<(y)?(x):(y))
@@ -40,13 +39,14 @@ public:
         widx = 0;
     }
 
-    ufifo(uint32_t size){
-        this->size = roundup_pow_of_two(size);
+
+    ufifo(uint32_t capacity){
+        size = roundup_pow_of_two(capacity);
         data = (uint8_t *)malloc(size);
         assert(data!=0);
         alloced = true;
 
-        printf("size=%d\n", this->size);
+        printf("align %d is size:%d\n", capacity, size);
 
         ridx = 0;
         widx = 0;
@@ -63,7 +63,7 @@ public:
     }
 
     uint32_t unused()const{
-        return size - used();
+        return size - used() - 1;
     }
 
     uint32_t push(const uint8_t *src, uint32_t limit){
