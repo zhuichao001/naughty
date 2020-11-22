@@ -58,7 +58,6 @@ public:
         }
     }
 
-
     uint32_t used()const{
         return ((widx+size)-ridx) & (size-1);
     }
