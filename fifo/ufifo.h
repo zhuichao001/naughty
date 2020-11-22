@@ -46,10 +46,16 @@ public:
         assert(data!=0);
         alloced = true;
 
-        printf("size=%d\n", size);
+        printf("size=%d\n", this->size);
 
         ridx = 0;
         widx = 0;
+    }
+
+    void init(){
+        for(int i=0; i<size; ++i){
+            data[i] = 'a'+i%26;
+        }
     }
 
 
@@ -61,9 +67,9 @@ public:
         return size - used();
     }
 
-    uint32_t in(const uint8_t *src, uint32_t len){
-        len = min(len, unused());
-        printf("in len=%d\n", len);
+    uint32_t push(const uint8_t *src, uint32_t limit){
+        uint32_t _unused = unused(); 
+        uint32_t len = min(limit, _unused);
         smp_mb();
         uint32_t right = min(widx+len, size);
         uint32_t first = right-widx;
@@ -74,9 +80,9 @@ public:
         return len;
     }
 
-    uint32_t out(uint8_t *dst, uint32_t len){
-        len = min(len, used());
-        printf("out len=%d\n", len);
+    uint32_t pop(uint8_t *dst, uint32_t limit){
+        uint32_t _used = used();
+        uint32_t len = min(limit, _used);
         uint32_t right = min(ridx+len, size);
         uint32_t first = right-ridx;
         smp_rmb();
