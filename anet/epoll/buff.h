@@ -17,10 +17,10 @@ class buff_t {
     }
 
     void append(const char *data, const int len){
-		if(_size+len>_capacity){
-			_buff = (char*)realloc(_buff, _capacity<<1);
-		}
-		memcpy(_buff+_size, data, len);
+        if(_size+len>_capacity){
+            _buff = (char*)realloc(_buff, _capacity<<1);
+        }
+        memcpy(_buff+_size, data, len);
         _size += len;
     }
 
@@ -31,12 +31,12 @@ class buff_t {
         _capacity = 0;
     }
 
-   	void clear(int n) {
+    void clear(int n) {
         if(_size-n>0){
             memcpy(_buff, _buff+n, _size-n);
         }
-		_size -= n;
-	}
+        _size -= n;
+    }
 
     int get(char **data, int *len){
         *len = _capacity - _size - _offset;
@@ -47,7 +47,7 @@ class buff_t {
     bool empty(){
         return _size==0;
     }
-public:
+private:
     char *_buff;
     int _capacity;
     int _size;    
