@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
 #define likely(x)    __builtin_expect(!!(x), 1)
