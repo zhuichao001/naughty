@@ -6,14 +6,12 @@
 #define unlikely(x)  __builtin_expect(!!(x), 0)
 
 int main(int argc, char *argv[]) {
-    int a;
-    a = atoi (argv[1]);
-    if (unlikely (a == 2)) {
-        ++a;
+    int x = atoi(argv[1]);
+    if (unlikely(x == 2)) {
+        ++x;
     } else {
-        --a;
+        --x;
     }
-    printf ("%d\n", a);
+    printf("%d\n", x);
     return 0;
 }
-
