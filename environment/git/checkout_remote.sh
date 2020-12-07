@@ -1,3 +1,3 @@
 git branch -r
-git checkout origin/v2
-git checkout v2
+git checkout origin/REPO
+git checkout REPO
