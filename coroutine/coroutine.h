@@ -17,6 +17,13 @@ typedef struct coroutine_t{
     int state;
     char stack[DEFAULT_STACK_SZIE];
 
+    void init(){
+        state = FREE;
+        ctx.uc_stack.ss_sp = stack;
+        ctx.uc_stack.ss_size = DEFAULT_STACK_SZIE;
+        ctx.uc_stack.ss_flags = 0;
+    }
+
 }coroutine_t;
 
 void digest(coroutine_t *r){
@@ -34,10 +41,7 @@ typedef struct schedule_t{
         cur_idx = -1;
         routines = new coroutine_t[MAX_ROUTINE_COUNT];
         for (int i = 0; i < MAX_ROUTINE_COUNT; i++) {
-            routines[i].state = FREE;
-            routines[i].ctx.uc_stack.ss_sp = routines[i].stack;
-            routines[i].ctx.uc_stack.ss_size = DEFAULT_STACK_SZIE;
-            routines[i].ctx.uc_stack.ss_flags = 0;
+            routines[i].init();
         }
     }
     
@@ -96,7 +100,5 @@ typedef struct schedule_t{
     }
 
 }schedule_t;
-
-static void uthread_body(schedule_t *ps);
 
 #endif
