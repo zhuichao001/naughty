@@ -4,10 +4,9 @@
 #include <ucontext.h>
 #include <vector>
 
-#define DEFAULT_STACK_SZIE (32<<10) //32k
-#define MAX_ROUTINE_COUNT   1024
-
-enum State{FREE, RUNNABLE, RUNNING, SUSPEND};
+const int DEFAULT_STACK_SZIE = (32<<10); //32k
+const int MAX_ROUTINE_COUNT  = 8;
+const int FREE=1, RUNNABLE=2, RUNNING=4, SUSPEND=8;
 
 typedef void (*task_t)(void *arg);
 
@@ -15,7 +14,7 @@ typedef struct coroutine_t{
     ucontext_t ctx;
     task_t task;
     void *arg;
-    enum State state;
+    int state;
     char stack[DEFAULT_STACK_SZIE];
 
 }coroutine_t;
@@ -46,9 +45,9 @@ typedef struct schedule_t{
         delete []routines;
     }
 
-    int getindex(enum State state){
+    int getindex(int states){
         for(int i = 0; i < MAX_ROUTINE_COUNT; ++i ){
-            if(routines[i].state == state){
+            if((routines[i].state & states) == routines[i].state){
                 return i;
             }
         }
@@ -57,7 +56,11 @@ typedef struct schedule_t{
 
     int create(task_t func){
         int idx = getindex(FREE);
-        if(idx>=0 && routines[idx].state == FREE){
+        if(idx<0){
+            return -1;
+        }
+
+        if(routines[idx].state == FREE){
             routines[idx].task = func;
             routines[idx].arg = this;
             routines[idx].state = RUNNABLE;
@@ -70,7 +73,7 @@ typedef struct schedule_t{
     }
 
     void schedule(){
-        cur_idx = getindex(RUNNABLE);
+        cur_idx = getindex(RUNNABLE|SUSPEND);
         if(cur_idx<0){
             return;
         }
@@ -78,37 +81,18 @@ typedef struct schedule_t{
         swapcontext(&main, &sub);
     }
 
-    void yield(){
-        if(cur_idx != -1 ){
-            coroutine_t *t = &routines[cur_idx];
-            t->state = SUSPEND;
-            cur_idx = -1;
-            swapcontext(&(t->ctx), &main);
-        }
-    }
-
-    void resume(){
-        cur_idx = getindex(SUSPEND);
+    void await(){
         if(cur_idx<0){
             return;
         }
-
-        coroutine_t *t = &(routines[cur_idx]);
-        if (t->state == SUSPEND) {
-            swapcontext(&(main),&(t->ctx));
-        }
+        coroutine_t *t = &routines[cur_idx];
+        cur_idx = -1;
+        t->state = SUSPEND;
+        swapcontext(&(t->ctx), &main);
     }
 
     bool finished(){
-        return !(runnable() || resumable());
-    }
-
-    bool runnable(){
-        return getindex(RUNNABLE)!=-1;
-    }
-
-    bool resumable(){
-        return getindex(SUSPEND)!=-1;
+        return getindex(RUNNABLE|SUSPEND) == -1;
     }
 
 }schedule_t;

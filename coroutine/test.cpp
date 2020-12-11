@@ -3,17 +3,17 @@
 
 
 void func_a(void * arg) {
-    printf("func_a before coroutine yield\n");
+    fprintf(stderr, "func_a before coroutine yield\n");
     schedule_t * sch = (schedule_t *)arg;
-    sch->yield();
-    printf("func_a after coroutine yield\n");
+    sch->await();
+    fprintf(stderr, "func_a after coroutine yield\n");
 }
 
 void func_b(void * arg) {
-    printf("func_b before coroutine yield\n");
+    fprintf(stderr, "func_b before coroutine yield\n");
     schedule_t * sch = (schedule_t *)arg;
-    sch->yield();
-    printf("func_b after coroutine yield\n");
+    sch->await();
+    fprintf(stderr, "func_b after coroutine yield\n");
 }
 
 void coroutine_test() {
@@ -21,14 +21,9 @@ void coroutine_test() {
     sch.create(func_a);
     sch.create(func_b);
     while(!sch.finished()){
-        while(sch.runnable()){
-            sch.schedule();
-        }
-        while(sch.resumable()){
-            sch.resume();
-        }
+        sch.schedule();
     }
-    printf("test over\n");
+    fprintf(stderr, "test over\n");
 }
 
 int main() {
