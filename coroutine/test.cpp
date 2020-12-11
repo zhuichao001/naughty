@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "coroutine.h"
 
-
 void func_a(void * arg) {
     fprintf(stderr, "func_a before coroutine yield\n");
     schedule_t * sch = (schedule_t *)arg;

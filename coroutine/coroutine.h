@@ -63,7 +63,6 @@ typedef struct schedule_t{
         if(idx<0){
             return -1;
         }
-
         if(routines[idx].state == FREE){
             routines[idx].task = func;
             routines[idx].arg = this;
