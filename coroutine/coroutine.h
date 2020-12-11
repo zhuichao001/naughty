@@ -26,7 +26,7 @@ typedef struct coroutine_t{
 
 }coroutine_t;
 
-void digest(coroutine_t *r){
+void bootup(coroutine_t *r){
     r->state = RUNNING;
     r->task(r->arg);
     r->state = FREE;
@@ -70,7 +70,7 @@ typedef struct schedule_t{
             coroutine_t &sub = routines[idx];
             getcontext(&sub.ctx);
             sub.ctx.uc_link = &(main);
-            makecontext(&sub.ctx, (void(*)(void))(digest), 1, &sub);
+            makecontext(&sub.ctx, (void(*)(void))(bootup), 1, &sub);
         }
         return idx;
     }
