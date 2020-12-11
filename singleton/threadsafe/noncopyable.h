@@ -2,10 +2,10 @@
 #define _NONCOPYABLE_H_
 
 class noncopyable{
-  protected:
+protected:
     noncopyable() = default;
     ~noncopyable() = default;
-  private:
+private:
     noncopyable(const noncopyable&) = delete;
     const noncopyable& operator=(const noncopyable&) = delete;
 };
