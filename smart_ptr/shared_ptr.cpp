@@ -34,9 +34,16 @@ void assign_shared_ptr(){
     std::cout << "val: " << *sp2 << std::endl;
 }
 
+//bad case, assign stack addr to shared_ptr
+void assign_stack_ptr(){
+    std::string s("I am a string on stack.");
+    std::shared_ptr<std::string> ps(&s);  //error: aborted
+}
+
 int main () {
     get_shared_ptr();
     swap_shared_ptr();
     assign_shared_ptr();
+    assign_stack_ptr();
     return 0;
 }
