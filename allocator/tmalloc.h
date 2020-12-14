@@ -1,11 +1,12 @@
-#ifndef _ALLOCATOR_H_
-#define _ALLOCATOR_H_
+#ifndef _NAUGHTY_ALLOCATOR_H_
+#define _NAUGHTY_ALLOCATOR_H_
 
 #include <new>
 #include <cstddef>
 #include <cstdlib>
 #include <climits>
 #include <iostream>
+#include <vector>
 #include <memory.h>
 
 namespace naughty{
@@ -49,14 +50,15 @@ public:
     }
 
     ~tmalloc(){
-        //TODO FREE
+        for(int i=0; i<huges.size(); ++i){
+            delete []huges[i];
+        }
     }
 
     pointer allocate(size_type n) {
         if(n > (size_t)MAX_BYTES){
             return pointer(malloc(n));
         }
-
         const int fidx = FREELIST_INDEX(n);
         trunk_t ** cur_list = &free_list[fidx];
         trunk_t * result = *cur_list;
@@ -84,19 +86,19 @@ public:
 
 private:
     trunk_t* free_list[NUM_LISTS];
+    std::vector<void *> huges;
 
     void refill(const int fidx){
         const int HUGE_SPACE_SIZE = 32<<10;
         const int TRUNK_SIZE = (fidx+1)*STEP_BYTES;
-
         free_list[fidx] = (trunk_t*)malloc(HUGE_SPACE_SIZE);  //TODO
         memset(free_list[fidx], 0, HUGE_SPACE_SIZE);
-
         trunk_t *inner = free_list[fidx];
         for(int j=0; j<HUGE_SPACE_SIZE/TRUNK_SIZE-1; ++j){
             inner->next = (trunk_t*)((void*)free_list[fidx] + TRUNK_SIZE);
             inner = (trunk_t*)((void*)inner+TRUNK_SIZE);
         }
+        huges.push_back((void*)free_list[fidx]);
     }
 
     pointer address(reference x) {
