@@ -12,7 +12,7 @@ const int SIZE_TO_READ = 16;
 
 int main() {
     //step 0: init
-    int fd = open("data.txt", O_RDONLY, 0);
+    int fd = open(".data.txt", O_RDONLY, 0);
     if (fd == -1) {
         printf("Unable to open fd!\n");
         exit(EXIT_FAILURE);
