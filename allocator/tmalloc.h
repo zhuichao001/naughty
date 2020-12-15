@@ -1,5 +1,5 @@
-#ifndef _NAUGHTY_ALLOCATOR_H_
-#define _NAUGHTY_ALLOCATOR_H_
+#ifndef _NAUGHTY_TMALLOC_H_
+#define _NAUGHTY_TMALLOC_H_
 
 #include <new>
 #include <cstddef>
@@ -32,81 +32,64 @@ typedef struct trunk_t {
 }trunk_t;
 
 
-template<class T>
 class tmalloc {
 public:
-    typedef T   value_type;
-    typedef T*  pointer;
-    typedef const T* const_pointer;
-    typedef T&  reference;
-    typedef const T& const_reference;
-    typedef size_t  size_type;
-    typedef ptrdiff_t difference_type;
-
-    tmalloc(){
+    tmalloc() {
         for(int fidx=0; fidx<NUM_LISTS; ++fidx){
             refill(fidx);
         }
     }
 
-    ~tmalloc(){
-        for(int i=0; i<huges.size(); ++i){
-            delete []huges[i];
+    ~tmalloc() {
+        for(int i=0; i<huge_pages.size(); ++i){
+            delete []huge_pages[i];
         }
     }
 
-    pointer allocate(size_type n) {
+    void * alloc(size_t n) {
         if(n > (size_t)MAX_BYTES){
-            return pointer(malloc(n));
+            return malloc(n);
         }
         const int fidx = FREELIST_INDEX(n);
-        trunk_t ** cur_list = &free_list[fidx];
-        trunk_t * result = *cur_list;
-        if(result==NULL){
-            refill(fidx);  //TODO
-            return allocate(n);
+        trunk_t * head = free_list[fidx];
+        if(head==nullptr){
+            refill(fidx);
+            if(free_list[fidx]==nullptr){
+                return nullptr;
+            }
         }
-        *cur_list = result->next;
-        return (pointer)(result->data);
+        free_list[fidx] = head->next;
+        head->fidx = fidx;
+        return (void*)(head->data);
     }
 
-    void deallocate(pointer p) {
-        trunk_t * obj = (trunk_t*)((void*)p - 8);
-        obj->next = free_list[obj->fidx];
-        free_list[obj->fidx]->next = obj;
-    }
-
-    void construct(pointer p, const T& value) {
-        new((T*)p) T(value);
-    }
-
-    void destroy(pointer p) {
-        ((T*)p)->~T();
+    void dealloc(void *p) {
+        trunk_t * t = (trunk_t*)((void*)p - sizeof(long long));
+        t->next = free_list[t->fidx];
+        free_list[t->fidx] = t;
     }
 
 private:
     trunk_t* free_list[NUM_LISTS];
-    std::vector<void *> huges;
+    std::vector<void *> huge_pages;
 
-    void refill(const int fidx){
+    void refill(const int fidx) {
         const int HUGE_SPACE_SIZE = 32<<10;
-        const int TRUNK_SIZE = (fidx+1)*STEP_BYTES;
-        free_list[fidx] = (trunk_t*)malloc(HUGE_SPACE_SIZE);  //TODO
-        memset(free_list[fidx], 0, HUGE_SPACE_SIZE);
-        trunk_t *inner = free_list[fidx];
-        for(int j=0; j<HUGE_SPACE_SIZE/TRUNK_SIZE-1; ++j){
-            inner->next = (trunk_t*)((void*)free_list[fidx] + TRUNK_SIZE);
-            inner = (trunk_t*)((void*)inner+TRUNK_SIZE);
+        const int trunk_size = (fidx+1)*STEP_BYTES;
+        void *page = malloc(HUGE_SPACE_SIZE);
+        if(page==nullptr){
+            fprintf(stderr, "ERROR:OUT OF MEMORY.\n");
+            return;
         }
-        huges.push_back((void*)free_list[fidx]);
-    }
-
-    pointer address(reference x) {
-        return (pointer)&x;
-    }
-
-    const_pointer const_address(const_reference x) {
-        return (const_pointer)&x;
+        memset(page, 0, HUGE_SPACE_SIZE);
+        free_list[fidx] = (trunk_t*)page;
+        huge_pages.push_back(page);
+        //link trunc list
+        trunk_t *inner = free_list[fidx];
+        for(int j=0; j<HUGE_SPACE_SIZE/trunk_size-1; ++j){
+            inner->next = (trunk_t*)((void*)inner + trunk_size);
+            inner = inner->next;
+        }
     }
 };
 

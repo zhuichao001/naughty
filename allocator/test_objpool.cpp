@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include "tallocator.h"
-
+#include "objpool.h"
 
 class A{
 public:
@@ -9,13 +8,12 @@ public:
     char data[35];
 };
 
-
 int main(){
-    naughty::tallocator<A> ta;
-    A *a = ta.alloc();
+    naughty::objpool<A> pool;
+    A *a = pool.fetch();
     a->ival=1;
     a->fval=3.14;
     const char *str = "test allocator";
     memcpy(a->data, str, strlen(str));
-    ta.dealloc(a);
+    pool.putin(a);
 }
