@@ -65,8 +65,9 @@ public:
 
     void dealloc(void *p) {
         trunk_t * t = (trunk_t*)((void*)p - sizeof(long long));
+        int fidx = t->fidx;
         t->next = free_list[t->fidx];
-        free_list[t->fidx] = t;
+        free_list[fidx] = t;
     }
 
 private:
