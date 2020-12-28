@@ -1,5 +1,5 @@
 #ifndef __NAUGHTY_THREAD_POOL_H__
-#define  __NAUGHTY_THREAD_POOL_H__
+#define __NAUGHTY_THREAD_POOL_H__
 
 #include <vector>
 #include <queue>
@@ -23,7 +23,7 @@ public:
 
     ~thread_pool_t(){
         running = false;
-        cov.notify_all(); 
+        condivar.notify_all(); 
         for(std::thread &th : threads){
             if(th.joinable()){
                 th.join();
@@ -39,13 +39,13 @@ public:
         using return_type = typename std::result_of_t<F(A...)>;
         auto task = std::make_shared<std::packaged_task<return_type()>>(std::bind(std::forward<F>(func), std::forward<A>(args)...));
         if(true){
-            std::lock_guard<std::mutex> locker{mtx};
+            std::lock_guard<std::mutex> locker{mutex};
             tasks.emplace([task](){(*task)();});
         }
         if(idle<1){
             scaleup(1);
         }
-        cov.notify_one(); 
+        condivar.notify_one(); 
         return task->get_future();
     }
 
@@ -61,8 +61,8 @@ private:
                 while(this->running){
                     task_t task;
                     if(true){
-                        std::unique_lock<std::mutex> locker{mtx};    
-                        cov.wait(locker, [this]{return !this->running||!this-tasks.empty();});
+                        std::unique_lock<std::mutex> locker{mutex};    
+                        condivar.wait(locker, [this]{return !this->running||!this-tasks.empty();});
                         if(!this->running && this->tasks.empty()){
                             return;
                         }
@@ -80,8 +80,8 @@ private:
 
     std::vector<std::thread> threads;
     std::queue<task_t> tasks;
-    std::mutex mtx;
-    std::condition_variable cov;
+    std::mutex mutex;
+    std::condition_variable condivar;
     std::atomic<bool> running;
     std::atomic<int> idle;
     std::atomic<int> size;
