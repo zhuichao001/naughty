@@ -7,7 +7,6 @@ long get_time_sec(){
     return ts.tv_sec;
 }
 
-
 long get_time_nsec(){
     static struct timespec ts;
     /*

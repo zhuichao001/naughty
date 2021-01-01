@@ -1,12 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/syscall.h>
-#include <unistd.h>
-#include <limits.h>
+#include <stdint.h>
 
 
 static unsigned long long get_tsc(void) {
@@ -19,27 +14,23 @@ static unsigned long long get_tsc(void) {
 
 }
 
-
 static unsigned long long get_cpu_khz() {
-    FILE *fp = fopen("/proc/cpuinfo","r");
+    FILE *fp = fopen("/proc/cpuinfo", "r");
     if(!fp) return 1;
-    char buf[4096] = {0};
-    fread(buf,1,sizeof(buf),fp);
+    char buf[2048] = {0};
+    fread(buf,1, sizeof(buf), fp);
     fclose(fp);
 
-    char *lp = strstr(buf,"cpu MHz");
+    char *lp = strstr(buf, "cpu MHz");
     if(!lp) return 1;
     lp += strlen("cpu MHz");
-    while(*lp == ' ' || *lp == '\t' || *lp == ':')
-    {
+    while(*lp == ' ' || *lp == '\t' || *lp == ':'){
         ++lp;
     }
 
     double mhz = atof(lp);
-    unsigned long long u = (unsigned long long)(mhz * 1000);
-    return u;
+    return (unsigned long long)(mhz * 1000);
 }
-
 
 unsigned long long get_tick_ms() {
     static uint32_t khz = get_cpu_khz();

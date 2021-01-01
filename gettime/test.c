@@ -8,11 +8,9 @@ int test_clock(){
     printf("get_time_nsec:%ld\n", get_time_nsec());
 }
 
-
 int test_tick_ms(){
     printf("get_tick_ms:%ld\n", get_tick_ms());
 }
-
 
 int main(){
     test_clock();
