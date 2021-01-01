@@ -6,11 +6,11 @@
 
 static unsigned long long get_tsc(void) {
     register uint32_t low, high;
-    register unsigned long long o;
+    register unsigned long long t;
     __asm__  __volatile__  ("rdtscp" : "=a"(low), "=d"(high)::"%rcx");
-    o = high;
-    o <<= 32;
-    return (o | low);
+    t = high;
+    t <<= 32;
+    return (t | low);
 
 }
 
