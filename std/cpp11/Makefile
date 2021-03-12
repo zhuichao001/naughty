@@ -4,6 +4,7 @@ all:
 	g++ -g -Wall -std=c++11 -o test_function std_function.cpp  
 	g++ -g -Wall -std=c++11 -o test_emplace_back std_emplace_back.cpp  
 	g++ -g -Wall -std=c++11 -o test_shared_from_this std_shared_from_this.cpp  
+	g++ -g -Wall -std=c++11 -o test_cpp11 test_cpp11.cpp
 	g++ -g -Wall -std=c++11 -pthread -o test_lock_guard std_lock_guard.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_thread_local thread_local.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_atomic std_atomic.cpp  
@@ -13,6 +14,7 @@ clean:
 	rm -f test_function
 	rm -f test_emplace_back
 	rm -f test_shared_from_this
+	rm -f test_cpp11
 	rm -f test_lock_guard
 	rm -f test_thread_local
 	rm -f test_atomic
