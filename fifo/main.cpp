@@ -15,7 +15,7 @@ void write(){
     src[N]=0;
 
     for(int pos=0; pos<N; ){
-        int len = u.push((uint8_t*)src+pos, 26<N-pos));
+        int len = u.push((uint8_t*)src+pos, 26<N-pos);
         if(len==0)continue;
 
         char backup = src[pos+len];
