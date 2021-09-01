@@ -7,3 +7,6 @@
  
  - void synchronize_rcu(void)  //writer wait for ongoing readers finishing read-operation (grace period)
  - void call_rcu(head, callback_func);  //don't wait like synchronize_rcu, asyncronizely execute
+
+## Reference
+ - http://www2.rdrop.com/users/paulmck/RCU/
