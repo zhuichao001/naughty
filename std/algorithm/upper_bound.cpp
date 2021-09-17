@@ -4,8 +4,8 @@
 #include <vector>       
 
 /**
- * upper_bound: find the first item larger than val
- * lower_bound: find the first item larger than val
+ * upper_bound: find the first item greater than val
+ * lower_bound: find the first item less than val
  */
 
 void test0(){
@@ -15,7 +15,10 @@ void test0(){
     std::vector<int> vec(arr, arr + N);
     std::sort(vec.begin(), vec.end());  //for binary search
 
-    std::vector<int>::iterator it = std::upper_bound(vec.begin(), vec.end(), 20);  //expect 22
+    //std::vector<int>::iterator it = std::upper_bound(vec.begin(), vec.end(), 20);
+    std::vector<int>::iterator it = std::upper_bound(vec.begin(), vec.end(), 20, [](int val, int cur){
+        return val<cur;
+    });  //expect 22
     std::cout << "upper bound is " << *it << std::endl;
 }
 
