@@ -16,19 +16,17 @@ int test(bool isflush, bool issync){
     fwrite(c, sizeof(char), strlen(c), fp);
 
     if(isflush){
-        fflush(fp); // from userspance to kernal
+        fflush(fp);         //write from userspance to kernal
     }
 
     if(issync){
-        fsync(fileno(fp));  //from kernal to disk
+        fsync(fileno(fp));  //write from kernal to disk
     }
 
     {
-        FILE *fp = fopen(kFileName, "r");
-        fseek(fp, 0, SEEK_SET);
+        fseek(fp, 0, SEEK_SET);  //fseek will not affect fwrite, because `a+` mode
         size_t count = fread(buff, sizeof(char), N, fp);
         fprintf(stderr, "Read %d bytes:%.*s\n errmsg:%s\n", count, count, buff, strerror(errno));
-        fclose(fp);
     }
 
     {
