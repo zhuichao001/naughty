@@ -1,5 +1,7 @@
 all:
-	g++ -o run fread.cpp
+	g++ -o test_fread fread.cpp
+	g++ -o test_pread pread.cpp -I..
 clean:
-	rm -f run
+	rm -f test_fread
+	rm -f test_pread
 	rm -f *.txt
