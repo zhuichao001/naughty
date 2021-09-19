@@ -1,3 +1,6 @@
+#ifndef _TIME_HLC_WATCH_H_
+#define _TIME_HLC_WATCH_H_
+
 #include <time.h>
 #include <sys/time.h>
 
@@ -30,3 +33,4 @@ private:
     Precision prec;
 };
 
+#endif
