@@ -31,21 +31,29 @@ void init_file(){
     fclose(fp);
 }
 
-int do_pread(int fd, int offset, int count){
+int do_pread(int fd, int filesize){
     char buf[1024] = {0};
-    if(pread(fd, buf, count, offset) == -1) { //atomicly lseek+rad
-        perror("pread failed");
-        return -1;
+    for(int i=0; i<200000; ++i){
+        int count = 1000;
+        int offset = random()%(filesize-1000);
+        if(pread(fd, buf, count, offset) == -1) { //atomicly lseek+rad
+            perror("pread failed");
+            return -1;
+        }
     }
     return 0;
 }
 
-int do_read(int fd, int offset, int count){
-    char buf[1024];
-    lseek(fd, offset, SEEK_SET);
-    if(read(fd, buf, count) == -1) { //atomicly lseek+rad
-        perror("read failed");
-        return -1;
+int do_read(int fd, int filesize){
+    char buf[1024] = {0};
+    for(int i=0; i<200000; ++i){
+        int count = 1000;
+        int offset = random()%(filesize-1000);
+        lseek(fd, offset, SEEK_SET);
+        if(read(fd, buf, count) == -1) {
+            perror("read failed");
+            return -1;
+        }
     }
     return 0;
 }
@@ -69,22 +77,14 @@ int main() {
     {
         watch_t t(Precision::MILISECOND);
         int64_t start = t.now();
-        for(int i=0; i<200000; ++i){
-            int offset = random()%(sb.st_size-1000);
-            int count = 1000;
-            do_read(fd, offset, count);
-        }
+        do_read(fd, sb.st_size);
         std::cout << "lseek+read cost:" << t.now()-start << "ms" << std::endl;
     }
 
     {
         watch_t t(Precision::MILISECOND);
         int64_t start = t.now();
-        for(int i=0; i<200000; ++i){
-            int offset = random()%(sb.st_size-1000);
-            int count = 1000;
-            do_pread(fd, offset, count);
-        }
+        do_pread(fd, sb.st_size);
         std::cout << "pread cost:" << t.now()-start << "ms" << std::endl;
     }
 

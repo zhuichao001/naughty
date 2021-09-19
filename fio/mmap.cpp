@@ -84,15 +84,15 @@ int main(int argc, char *argv[]) {
     {
         watch_t t(Precision::MILISECOND);
         int64_t start = t.now();
-        test_read();
-        std::cout << "read cost:" << t.now()-start << "ms" << std::endl;
+        test_mmap();
+        std::cout << "mmap read cost:" << t.now()-start << "ms" << std::endl;
     }
 
     {
         watch_t t(Precision::MILISECOND);
         int64_t start = t.now();
-        test_mmap();
-        std::cout << "mmap read cost:" << t.now()-start << "ms" << std::endl;
+        test_read();
+        std::cout << "read cost:" << t.now()-start << "ms" << std::endl;
     }
 
     return 0;
