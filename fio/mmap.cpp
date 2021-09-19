@@ -9,16 +9,12 @@
 #include "hlc/watch.h"
 
 const char *kFileName = "test.txt";
-int fileSize = 0;
 
 void init_file(){
     char c[21] = "This is text data. \n";
     FILE *fp = fopen(kFileName, "a+");
     for(int i=0; i<20000000; ++i){
-        size_t n = fwrite(c, sizeof(char), strlen(c), fp);
-        if(n>0){
-            fileSize += n;
-        }
+        fwrite(c, sizeof(char), strlen(c), fp);
     }
     fclose(fp);
 }

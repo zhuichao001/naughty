@@ -59,11 +59,18 @@ int main() {
         return -1;
     }
 
+    struct stat sb;
+    if (stat(kFileName, &sb) < 0) {
+        fprintf(stderr, "stat %s fail\n", kFileName);
+        close(fd);
+        return -1;
+    }
+
     {
         watch_t t(Precision::MILISECOND);
         int64_t start = t.now();
         for(int i=0; i<200000; ++i){
-            int offset = random()%(fileSize-1000);
+            int offset = random()%(sb.st_size-1000);
             int count = 1000;
             do_read(fd, offset, count);
         }
@@ -74,7 +81,7 @@ int main() {
         watch_t t(Precision::MILISECOND);
         int64_t start = t.now();
         for(int i=0; i<200000; ++i){
-            int offset = random()%(fileSize-1000);
+            int offset = random()%(sb.st_size-1000);
             int count = 1000;
             do_pread(fd, offset, count);
         }
