@@ -1,34 +1,13 @@
 #include <time.h>
 #include <sys/time.h>
 #include <stdint.h>
+#include "watch.h"
 
-
-enum Precision{SECOND=0, MILISECOND=1,  MICROSECOND=2, NANOSECOND=3};
 
 typedef struct{
     int64_t time;
     int32_t seq;
-}timepoint_t;
-
-class watch_t{
-public:
-    watch_t(Precision p):prec(p){}
-    int64_t now(){
-        struct timeval tv;
-        gettimeofday(&tv,NULL);
-        if(prec==SECOND){
-            return tv.tv_sec;
-        }else if(prec==MILISECOND){
-            return tv.tv_sec*1000 + tv.tv_usec/1000;
-        }else if(prec==MILISECOND){
-            return tv.tv_sec*1000000 + tv.tv_usec;
-        }else{
-            return 1000*(tv.tv_sec*1000000 + tv.tv_usec);
-        }
-    }
-private:
-    Precision prec;
-};
+}vtime_t;
 
 
 class hlc_t{
@@ -38,7 +17,7 @@ public:
         least.seq = 0;
     }
 
-    clock_t now(){
+    vtime_t now(){
         int64_t now = clock.now();
         if(now>least.time){
             least.time=now;
@@ -46,6 +25,7 @@ public:
         }else{
             least.seq+=1;
         }
+        return least;
     }
 
     void update(int64_t t){
@@ -57,5 +37,5 @@ public:
     }
 private:
     watch_t clock;
-    timepoint_t least;
+    vtime_t least;
 };
