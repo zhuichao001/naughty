@@ -19,16 +19,6 @@ void init_file(){
     fclose(fp);
 }
 
-void release(int fd, char *mem, int size){
-    if (fd > 0) {
-        close(fd);
-    }
-
-    if (mem != (char *)-1) {
-        munmap(mem, size);
-    }
-}
-
 int test_mmap(){
     int fd = open(kFileName, O_RDWR);
     if (fd < 0) {
