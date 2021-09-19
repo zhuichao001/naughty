@@ -19,7 +19,7 @@
 const char *kFileName = "test.txt";
 int fileSize = 0;
 
-void enfile(){
+void init_file(){
     char c[21] = "This is text data. \n";
     FILE *fp = fopen(kFileName, "a+");
     for(int i=0; i<1000; ++i){
@@ -51,8 +51,7 @@ int do_read(int fd, int offset, int count){
 }
 
 int main() {
-    watch_t t(Precision::MILISECOND);
-    enfile();
+    init_file();
 
     int fd = open(kFileName, O_RDONLY);
     if(fd < 0) {
