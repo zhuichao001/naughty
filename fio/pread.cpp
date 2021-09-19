@@ -60,21 +60,28 @@ int main() {
         return -1;
     }
 
-    int64_t start = t.now();
-    for(int i=0; i<200000; ++i){
-        int offset = random()%(fileSize-1000);
-        int count = 1000;
-        do_read(fd, offset, count);
+    {
+        watch_t t(Precision::MILISECOND);
+        int64_t start = t.now();
+        for(int i=0; i<200000; ++i){
+            int offset = random()%(fileSize-1000);
+            int count = 1000;
+            do_read(fd, offset, count);
+        }
+        std::cout << "lseek+read cost:" << t.now()-start << "ms" << std::endl;
     }
-    std::cout << "lseek+read cost:" << t.now()-start << "ms" << std::endl;
 
-    start = t.now();
-    for(int i=0; i<200000; ++i){
-        int offset = random()%(fileSize-1000);
-        int count = 1000;
-        do_pread(fd, offset, count);
+    {
+        watch_t t(Precision::MILISECOND);
+        int64_t start = t.now();
+        for(int i=0; i<200000; ++i){
+            int offset = random()%(fileSize-1000);
+            int count = 1000;
+            do_pread(fd, offset, count);
+        }
+        std::cout << "pread cost:" << t.now()-start << "ms" << std::endl;
     }
-    std::cout << "pread cost:" << t.now()-start << "ms" << std::endl;
 
+    close(fd);
     return 0;
 }
