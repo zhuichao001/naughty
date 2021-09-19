@@ -6,12 +6,13 @@
 #include "hlc/watch.h"
 
 watch_t t(Precision::MILISECOND);
+const int N = 1000*1000; //100w
 
 void test_map(){
     std::unordered_map<std::string,std::string> strmap;
 
     int64_t start = t.now();
-    for(int i=0; i<5000*1000; ++i){
+    for(int i=0; i<N; ++i){
         const std::string &key = std::to_string(i);
         const std::string &val = std::to_string(uint64_t(i)*i);
         strmap[key] = val;
@@ -24,7 +25,7 @@ void test_unordered_map(){
     std::map<std::string,std::string> strmap;
 
     int64_t start = t.now();
-    for(int i=0; i<5000*1000; ++i){
+    for(int i=0; i<N; ++i){
         const std::string &key = std::to_string(i);
         const std::string &val = std::to_string(uint64_t(i)*i);
         strmap[key] = val;
