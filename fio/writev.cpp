@@ -45,7 +45,6 @@ int do_write(){
     memcpy(buf, buf1, BUFLEN);
     memcpy(buf+BUFLEN, buf2, BUFLEN);
 
-
     int fd = open(kFileName, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
     if(fd < 0){
         perror("open");

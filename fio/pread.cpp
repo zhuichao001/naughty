@@ -41,7 +41,7 @@ int do_pread(int fd, int offset, int count){
 }
 
 int do_read(int fd, int offset, int count){
-    char buf[1024] = {0};
+    char buf[1024];
     lseek(fd, offset, SEEK_SET);
     if(read(fd, buf, count) == -1) { //atomicly lseek+rad
         perror("read failed");
