@@ -10,6 +10,7 @@ all:
 	g++ -g -Wall -std=c++11 -pthread -o test_atomic std_atomic.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_mutex std_mutex.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_unique_lock std_unique_lock.cpp  
+	g++ -g -Wall -std=c++11 -pthread -o test_array std_array.cpp  
 clean:
 	rm -f test_move
 	rm -f test_bind
@@ -22,3 +23,4 @@ clean:
 	rm -f test_atomic
 	rm -f test_mutex
 	rm -f test_unique_lock
+	rm -f test_array
