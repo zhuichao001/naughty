@@ -86,7 +86,6 @@ int read_file(const char* path, std::string &data) {
         return -1;
     }
     data.reserve(length);
-    fprintf(stderr, "length:%d\n", length);
 
     char buf[4096]={0,};
     memset(buf, 0 ,4096);
@@ -101,8 +100,6 @@ int read_file(const char* path, std::string &data) {
         } 
         data.append(buf, n);
     }
-    fprintf(stderr, "data:%s\n", buf);
-    fprintf(stderr, "string:%s\n", data.c_str());
     close(fd);
     return 0;
 }
