@@ -9,11 +9,15 @@ void test1(){
 }
 
 void test2(){
-    append_file(path, "123,./abc\n");
+    int fd = open_append(path);
+    append_file(fd, "123,./abc\n");
+    close(fd);
 
+    fd = open_read(path);
     std::string data;
-    read_file(path, data);
+    read_file(fd, data);
     fprintf(stderr, "read:%s\n", data.c_str());
+    close(fd);
 }
 
 void test3(){

@@ -14,7 +14,7 @@
     //O_RDONLY          只读
     //O_RDWR            读写
     //O_APPEND          追加写
-    //O_CLOEXEC         TODO:
+    //O_CLOEXEC         fork子进程自动关闭该fd
 
     //S_IRUSR(S_IREAD)  文件拥有者具备读权限
     //S_IWUSR(S_IWRITE) 文件拥有者具备写权限
@@ -36,7 +36,21 @@ int fsize(const int fd) {
     return -1;
 }
 
-int open_create(const char* path) {
+bool fexist(const char *path) {
+    if (access(path, F_OK) == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool fwriteable(const char *path) {
+    if (access(path, W_OK) == 0) {
+        return true;
+    }
+    return false;
+}
+
+int open_create(const char *path) {
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
     int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, mode);
     if (fd == -1) {
@@ -48,8 +62,7 @@ int open_create(const char* path) {
 
 int open_append(const char* path) {
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
-    int fd = open(path, O_RDWR | O_APPEND);
-    //int fd = open(path, O_RDWR | O_APPEND, mode);
+    int fd = open(path, O_RDWR | O_APPEND, mode);
     if (fd == -1) {
         printf("failed open appending file:%s, errno:%d\n", path, errno);
         return -1;
@@ -75,8 +88,7 @@ int create(const char* path) {
     return fd;
 }
 
-int read_file(const char* path, std::string &data) {
-    int fd = open_read(path);
+int read_file(const int fd, std::string &data) {
     if(fd<0){
         return -1;
     }
@@ -104,8 +116,7 @@ int read_file(const char* path, std::string &data) {
     return 0;
 }
 
-int write_file(const char* path, const std::string &data) {
-    int fd = open_create(path);
+int write_file(const int fd, const std::string &data) {
     if(fd<0){
         return -1;
     }
@@ -128,8 +139,7 @@ int write_file(const char* path, const std::string &data) {
     return 0;
 }
 
-int append_file(const char* path, const std::string &data) {
-    int fd = open_append(path);
+int append_file(const int fd, const std::string &data) {
     if(fd<0){
         return -1;
     }
