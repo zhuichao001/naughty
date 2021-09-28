@@ -50,6 +50,13 @@ bool fwriteable(const char *path) {
     return false;
 }
 
+bool seekable(const int fd){
+    if(lseek(fd, 0, SEEK_CUR)==-1){
+        return false;
+    }
+    return true;
+}
+
 int open_create(const char *path) {
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
     int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, mode);
