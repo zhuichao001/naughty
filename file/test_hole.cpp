@@ -42,6 +42,11 @@ int test_nohole(){
     return 0;
 }
 
+/**
+ * ls -ls hole.txt nohole.txt
+ * od -c hole.txt
+ * od -c nohole.txt
+ */
 int main(){
     if(test_hole()<0){
         fprintf(stderr, "failed test hole\n");
