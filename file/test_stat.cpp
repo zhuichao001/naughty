@@ -9,7 +9,6 @@ int test_stat(){
     }
 
     const char *type;
-
     if(S_ISREG(st.st_mode)){
         type = "regular";
     }else if(S_ISDIR(st.st_mode)){
@@ -27,8 +26,8 @@ int test_stat(){
     }else{
         type = "[UNKNOWN MODE]";
     }
-
     printf("type:%s\n", type);
+
     return 0;
 }
 
