@@ -38,7 +38,7 @@ int hook(){
         return -1;
     }
     //the absolute address
-    uintptr_t addr = base_addr + 0x3f90;
+    uintptr_t addr = base_addr + 0x201028;
 
     //add write permission
     mprotect((void *)PAGE_START(addr), PAGE_SIZE, PROT_READ | PROT_WRITE);
