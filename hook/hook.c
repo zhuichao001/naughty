@@ -18,15 +18,14 @@ void *my_malloc(size_t size){
 }
 
 int hook(){
-    char       line[512];
-    FILE      *fp;
-    uintptr_t  base_addr = 0;
-    uintptr_t  addr;
 
+    FILE      *fp;
     if((fp = fopen("/proc/self/maps", "r"))==NULL){
         return -1;
     }
 
+    char       line[512];
+    uintptr_t  base_addr = 0;
     //find base address of libtest.so
     while(fgets(line, sizeof(line), fp)){
         if(NULL != strstr(line, "libdepend.so") &&
@@ -39,7 +38,7 @@ int hook(){
         return -1;
     }
     //the absolute address
-    addr = base_addr + 0x3f90;
+    uintptr_t addr = base_addr + 0x3f90;
 
     //add write permission
     mprotect((void *)PAGE_START(addr), PAGE_SIZE, PROT_READ | PROT_WRITE);
