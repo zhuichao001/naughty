@@ -4,20 +4,18 @@
 #include <pthread.h>
 #include "atomic/atomic.h"
 
+atomic_t as = ATOMIC_INIT(0); //count produced
+atomic_t ar = ATOMIC_INIT(0); //count consumed
+
+pthread_mutex_t qlock = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t qready = PTHREAD_COND_INITIALIZER;
+
 typedef struct msg_t{
     int id;
     struct msg_t *next;
 } msg_t;
 
-
-struct msg_t *head;
-
-pthread_cond_t qready = PTHREAD_COND_INITIALIZER;
-pthread_mutex_t qlock = PTHREAD_MUTEX_INITIALIZER;
-
-atomic_t ar = ATOMIC_INIT(0);
-atomic_t as = ATOMIC_INIT(0);
-
+msg_t *head;
 
 msg_t *dequeue(){
     pthread_mutex_lock(&qlock);
