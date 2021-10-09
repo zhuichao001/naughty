@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "shared_ptr.h"
+#include "smart_ptr.h"
 
 
 int main(){
