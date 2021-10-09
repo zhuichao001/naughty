@@ -111,12 +111,10 @@ private:
         _pn->dec_shared();
         if(_pn->shared_count()==0){
             delete _px;
-            _px = nullptr;
 
             if(_pn->weak_count()==0){
                 delete _pn;
             }
-            _pn = nullptr;
         }
     }
 
