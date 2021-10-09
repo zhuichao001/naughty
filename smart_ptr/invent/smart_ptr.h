@@ -194,7 +194,6 @@ public:
         _pn->dec_weak();
         if(_pn->weak_count()==0 && _pn->shared_count()==0){
             delete _pn;
-            _pn = nullptr;
         }
     }
 
