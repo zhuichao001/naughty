@@ -1,11 +1,17 @@
+#ifndef _WAL_FIO_H_
+#define _WAL_FIO_H_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <memory.h>
 #include <string>
+#include <vector>
+
 
 /**
     //O_CREAT           创建
@@ -204,3 +210,62 @@ int copy_file(const char * src, const char * dst) {
     close(wfd);
     return 0;
 }
+
+int mkdir(const char* path) {
+    char tmp[256];
+    strcpy(tmp, path);      
+
+    int len = strlen(tmp);             
+    if('/' != tmp[len-1]){
+        strcat(tmp, "/");
+        len++;
+    }
+
+    for(int i=1; i<len; i++){
+        if('/' == tmp[i]){
+            tmp[i] = '\0';
+            if(::access(tmp, F_OK) != 0){
+                if(::mkdir(tmp, 0777) == -1){
+                    perror("mkdir() failed!");
+                    return -1;
+                }
+            }
+            tmp[i] = '/';      
+        }
+    }
+    return 0;
+}
+
+int ls(const char *path, std::vector<std::string> &files) {
+    struct stat st;
+    if(stat(path, &st) < 0 || !S_ISDIR(st.st_mode)) {
+        printf("invalid path: %s\n", path);
+        return -1;
+    }
+
+    DIR *dir = NULL;
+    if(!(dir = opendir(path))) {
+        printf("opendir[%s] error: %m\n", path);
+        return -1;
+    }
+
+    struct dirent *dp = NULL;
+    while((dp = readdir(dir)) != NULL) {
+        if((!strncmp(dp->d_name, ".", 1)) || (!strncmp(dp->d_name, "..", 2))){
+            continue;
+        }
+
+        char subpath[256];
+        snprintf(subpath, sizeof(subpath) - 1, "%s/%s\0", path, dp->d_name);
+        stat(subpath, &st);
+        if(!S_ISDIR(st.st_mode)) {
+            files.push_back(std::string(subpath));
+        } else {
+            //printf("dir:%s/\n", dp->d_name);
+        }
+    }
+    closedir(dir);
+    return 0;
+}
+
+#endif
