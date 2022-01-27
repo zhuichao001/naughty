@@ -20,6 +20,5 @@ int main(){
     thread_pool_t pool(8);
     auto cb = pool.post(func, 3);
     auto ret = cb.get();
-    fprintf(stderr, "ret:%d", ret);
     return 0;
 }
