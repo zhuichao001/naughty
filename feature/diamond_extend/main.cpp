@@ -6,13 +6,20 @@ protected:
     int value;
 public:
     Base()=default;
-    Base(int v):value(v){}
+    Base(int v):
+        value(v){
+        std::cout<< "Base Called" <<std::endl;
+    }
 };
 
 class Father:public Base{
 public:
     Father()=default;
-    Father(int v):Base(v){}
+    Father(int v):
+        Base(v){
+        std::cout<< "Father Called" <<std::endl;
+    }
+
     void set_value(int value){
         this->value=value;
     }
@@ -21,7 +28,10 @@ public:
 class Mother:public Base{
 public:
     Mother()=default;
-    Mother(int v):Base(v){}
+    Mother(int v):
+        Base(v){
+        std::cout<< "Mother Called" <<std::endl;
+    }
     int get_value(){
         return this->value;
     }
@@ -30,7 +40,11 @@ public:
 class Son:public Father,public Mother{
 public:
     Son()=default;
-    Son(int v):Father(v),Mother(v){}
+    Son(int v):
+        Father(v),
+        Mother(v){
+        std::cout<< "Son Called" <<std::endl;
+    }
 };
 
 int main(){
