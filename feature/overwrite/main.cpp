@@ -9,6 +9,9 @@ public:
 
 class Derived : public Base {
 public:
+    /*
+     * In any case, it is forbidden to redefine inherited non-virtual functions!
+     */
     virtual void f(char x) const { cout << "Derived::f(char) " << x << endl; }
 };
 
@@ -24,4 +27,3 @@ int main() {
 
     return 0;
 }
-
