@@ -132,7 +132,8 @@ int write_file(const int fd, const char *buf, int length) {
         return -1;
     }
     int n;
-    while (length>0 && (n = ::write(fd, buf, 4096))!=0){
+    int buf_len = length>4096?4096:length;
+    while (length>0 && (n = ::write(fd, buf, buf_len))!=0){
         if (n == -1) {
             if (errno == EINTR){
                 continue;
@@ -142,6 +143,7 @@ int write_file(const int fd, const char *buf, int length) {
         } 
         buf += n;
         length -= n;
+        buf_len = length>4096?4096:length;
     }
     return 0;
 }
