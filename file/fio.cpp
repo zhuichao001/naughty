@@ -159,10 +159,12 @@ int write_file(const int fd, const std::string &data) {
 }
 
 int write_file(const char* path, const char *buf, const int length){
+    int fd = -1;
     if (!exist(path)) {
-        return -1;
+        fd = open_create(path);
+    }else{
+        fd = ::open(path, O_RDWR, 0664);
     }
-    int fd = ::open(path, O_RDWR, 0664);
     int err = write_file(fd, buf, length);
     ::close(fd);
     return err;
@@ -226,9 +228,10 @@ int copy_file(const char * src, const char * dst) {
 }
 
 int rename_file(const char * src, const char * dst) {
-    int fd = open(dst, O_DIRECTORY|O_RDONLY);
+    //int fd = open(dst, O_DIRECTORY|O_RDONLY);
     ::rename(src, dst);
-    return ::fsync(fd);
+    //return ::fsync(fd);
+    return 0;
 }
 
 int mkdir(const char* path) {
