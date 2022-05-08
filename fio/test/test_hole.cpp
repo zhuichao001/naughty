@@ -15,7 +15,7 @@ int test_hole(){
         return -1;
     }
 
-    if(lseek(fd, 18384, SEEK_SET) == -1){
+    if(fio::flseek(fd, 18384) == -1){
         return -1;
     }
 

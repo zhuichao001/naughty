@@ -289,7 +289,7 @@ int mkdir(const char* path) {
     return 0;
 }
 
-int ls(const char *path, std::vector<std::string> &files) {
+int flist(const char *path, std::vector<std::string> &files) {
     struct stat st;
     if (::stat(path, &st) < 0 || !S_ISDIR(st.st_mode)) {
         printf("invalid path: %s\n", path);

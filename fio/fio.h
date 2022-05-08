@@ -24,10 +24,6 @@ int fopen(const char *path, OPEN_PURPOSE purpose=READ);
 
 int fcreate(const char* path);
 
-inline int fclose(int fd) {
-    return ::close(fd);
-}
-
 int fsize(const int fd);
 
 bool fwriteable(const char *path);
@@ -56,7 +52,11 @@ bool dexist(const char *dir);
 
 int mkdir(const char* path);
 
-int ls(const char *path, std::vector<std::string> &files);
+int flist(const char *path, std::vector<std::string> &files);
+
+inline int flseek(const int fd, const int offset) { return ::lseek(fd, offset, SEEK_SET); }
+
+inline int fclose(int fd) { return ::close(fd); }
 
 } // end of namespace fio
 
