@@ -1,27 +1,27 @@
-#include "io.h"
+#include "fio.h"
 
 const char * path = "./www.txt";
 
 void test1(){
-    int fd = open_create(path);
+    int fd = fio::fopen(path, fio::READ);
     printf("open fd: %d\n", fd);
-    close(fd);
+    fio::fclose(fd);
 }
 
 void test2(){
-    int fd = open_append(path);
-    append_file(fd, "123,./abc\n");
-    close(fd);
+    int fd = fio::fopen(path, fio::APPEND);
+    fio::fappend(fd, "123,./abc\n");
+    fio::fclose(fd);
 
-    fd = open_read(path);
+    fd = fio::fopen(path, fio::READ);
     std::string data;
-    read_file(fd, data);
+    fio::fread(fd, data);
     fprintf(stderr, "read:%s\n", data.c_str());
-    close(fd);
+    fio::fclose(fd);
 }
 
 void test3(){
-    copy_file(path, "./out.txt");
+    fio::fcopy(path, "./out.txt");
 }
 
 int main() {

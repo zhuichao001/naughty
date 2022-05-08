@@ -1,5 +1,6 @@
-
 #include "fio.h"
+
+namespace fio{
 
 /**
     //O_CREAT           创建
@@ -21,37 +22,7 @@
     //S_IXOTH           其他用户具备可执行权限
 */
 
-int fsize(const int fd) {
-    struct stat st;
-    if (::fstat(fd, &st)==0) {
-        return st.st_size;
-    }
-    printf("failed fstate errno:%d\n", errno);
-    return -1;
-}
-
-bool exist(const char *path) {
-    if (::access(path, F_OK) == 0) {
-        return true;
-    }
-    return false;
-}
-
-bool fwriteable(const char *path) {
-    if (::access(path, W_OK) == 0) {
-        return true;
-    }
-    return false;
-}
-
-bool seekable(const int fd){
-    if (::lseek(fd, 0, SEEK_CUR)==-1) {
-        return false;
-    }
-    return true;
-}
-
-int open_create(const char *path) {
+static int open_create(const char *path) {
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
     int fd = ::open(path, O_RDWR | O_CREAT | O_TRUNC, mode);
     if (fd == -1) {
@@ -61,7 +32,7 @@ int open_create(const char *path) {
     return fd;
 }
 
-int open_append(const char* path) {
+static int open_append(const char* path) {
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
     int fd = ::open(path, O_RDWR | O_APPEND, mode);
     if (fd == -1) {
@@ -70,7 +41,8 @@ int open_append(const char* path) {
     }
     return fd;
 } 
-int open_read(const char* path) {
+
+static int open_read(const char* path) {
     mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH;
     int fd = ::open(path, O_RDONLY, mode);
     if (fd == -1) {
@@ -80,7 +52,20 @@ int open_read(const char* path) {
     return fd;
 }
 
-int create(const char* path) {
+int fopen(const char *path, OPEN_PURPOSE purpose){
+    switch(purpose){
+        case CREATE:
+            return open_create(path);
+        case APPEND:
+            return open_create(path);
+        case READ:
+            return open_read(path);
+        default:
+            return open_read(path);
+    }
+}
+
+int fcreate(const char* path) {
     int fd = ::creat(path, 0664);
     if (fd == -1) {
         printf("failed create file:%s, errno:%d\n", path, errno);
@@ -89,12 +74,35 @@ int create(const char* path) {
     return fd;
 }
 
-int read_file(const int fd, std::string &data) {
+int fsize(const int fd) {
+    struct stat st;
+    if (::fstat(fd, &st)==0) {
+        return st.st_size;
+    }
+    printf("failed fstate errno:%d\n", errno);
+    return -1;
+}
+
+bool fwriteable(const char *path) {
+    if (::access(path, W_OK) == 0) {
+        return true;
+    }
+    return false;
+}
+
+bool fseekable(const int fd){
+    if (::lseek(fd, 0, SEEK_CUR)==-1) {
+        return false;
+    }
+    return true;
+}
+
+int fread(const int fd, std::string &data) {
     if (fd<0) {
         return -1;
     }
 
-    int length = ::fsize(fd);
+    int length = fsize(fd);
     if (length<0) {
         return -1;
     }
@@ -117,17 +125,17 @@ int read_file(const int fd, std::string &data) {
     return 0;
 }
 
-int read_file(const char* path, std::string &data){
-    if (!exist(path)) {
+int fread(const char* path, std::string &data){
+    if (!fexist(path)) {
         return -1;
     }
     int fd = ::open(path, O_RDWR, 0664);
-    int err = read_file(fd, data);
+    int err = fread(fd, data);
     ::close(fd);
     return err;
 }
 
-int write_file(const int fd, const char *buf, int length) {
+int fwrite(const int fd, const char *buf, int length) {
     if (fd<0) {
         return -1;
     }
@@ -148,29 +156,29 @@ int write_file(const int fd, const char *buf, int length) {
     return 0;
 }
 
-int write_file(const int fd, const std::string &data) {
+int fwrite(const int fd, const std::string &data) {
     if (fd<0) {
         return -1;
     }
 
     const char *buf = data.c_str();
     int length = data.size();
-    return write_file(fd, buf, length);
+    return fwrite(fd, buf, length);
 }
 
-int write_file(const char* path, const char *buf, const int length){
+int fwrite(const char* path, const char *buf, const int length){
     int fd = -1;
-    if (!exist(path)) {
+    if (!fexist(path)) {
         fd = open_create(path);
     }else{
         fd = ::open(path, O_RDWR, 0664);
     }
-    int err = write_file(fd, buf, length);
+    int err = fwrite(fd, buf, length);
     ::close(fd);
     return err;
 }
 
-int append_file(const int fd, const std::string &data) {
+int fappend(const int fd, const std::string &data) {
     if (fd<0) {
         return -1;
     }
@@ -193,7 +201,7 @@ int append_file(const int fd, const std::string &data) {
     return 0;
 }
 
-int copy_file(const char * src, const char * dst) {
+int fcopy(const char * src, const char * dst) {
     int rfd = open_read(src);
     int wfd = open_create(dst);
     if (rfd<0 || wfd<0) {
@@ -227,13 +235,35 @@ int copy_file(const char * src, const char * dst) {
     return 0;
 }
 
-int rename_file(const char * src, const char * dst) {
-    //int fd = open(dst, O_DIRECTORY|O_RDONLY);
-    ::rename(src, dst);
-    //return ::fsync(fd);
-    return 0;
+int frename(const char * src, const char * dst) {
+    return ::rename(src, dst);
 }
 
+//check if file exist
+bool fexist(const char *path) {
+    if(path==nullptr){
+        return false;
+    }
+
+    if (::access(path, F_OK) == 0) {
+        return true;
+    }
+    return false;
+}
+
+//check if directory exist
+bool dexist(const char *dir){
+    if(dir==nullptr){
+        return false;
+    }
+
+    if(opendir(dir)==nullptr){
+        return false;
+    }
+    return true;
+}
+
+//like linux command: mkdir -p `path`
 int mkdir(const char* path) {
     char tmp[256];
     strcpy(tmp, path);      
@@ -290,3 +320,5 @@ int ls(const char *path, std::vector<std::string> &files) {
     closedir(dir);
     return 0;
 }
+
+} // end of namespace fio

@@ -12,41 +12,52 @@
 #include <string>
 #include <vector>
 
+namespace fio{
+
+enum OPEN_PURPOSE{
+    CREATE = 1,
+    APPEND = 2,
+    READ = 3,
+};
+
+int fopen(const char *path, OPEN_PURPOSE purpose=READ);
+
+int fcreate(const char* path);
+
+inline int fclose(int fd) {
+    return ::close(fd);
+}
 
 int fsize(const int fd);
 
 bool fwriteable(const char *path);
 
-bool seekable(const int fd);
+bool fseekable(const int fd);
 
-int open_create(const char *path);
+int fread(const int fd, std::string &data);
 
-int open_append(const char* path);
+int fread(const char* path, std::string &data);
 
-int open_read(const char* path);
+int fwrite(const int fd, const char *buf, int length);
 
-int create(const char* path);
+int fwrite(const int fd, const std::string &data);
 
-int read_file(const int fd, std::string &data);
+int fwrite(const char* path, const char *buf, const int length);
 
-int read_file(const char* path, std::string &data);
+int fappend(const int fd, const std::string &data);
 
-int write_file(const int fd, const char *buf, int length);
+int fcopy(const char * src, const char * dst);
 
-int write_file(const int fd, const std::string &data);
+int frename(const char * src, const char * dst);
 
-int write_file(const char* path, const char *buf, const int length);
+bool fexist(const char *path);
 
-int append_file(const int fd, const std::string &data);
-
-int copy_file(const char * src, const char * dst);
-
-int rename_file(const char * src, const char * dst);
-
-bool exist(const char *path);
+bool dexist(const char *dir);
 
 int mkdir(const char* path);
 
 int ls(const char *path, std::vector<std::string> &files);
+
+} // end of namespace fio
 
 #endif

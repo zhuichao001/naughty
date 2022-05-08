@@ -1,9 +1,9 @@
 #include <fcntl.h>
 #include <stdio.h>
-#include "io.h"
+#include "fio.h"
 
 int test_hole(){
-    int fd = create("hole.txt");
+    int fd = fio::fcreate("hole.txt");
     if(fd<0){
         return -1;
     }
@@ -11,7 +11,7 @@ int test_hole(){
     char buf[] = "abcdefghij";
     char buf2[] = "ABCDEFGHIJ";
 
-    if(write(fd, buf, 10)!=10){
+    if(fio::fwrite(fd, buf, 10)!=10){
         return -1;
     }
 
@@ -19,26 +19,26 @@ int test_hole(){
         return -1;
     }
 
-    if(write(fd, buf2, 10) != 10){
+    if(fio::fwrite(fd, buf2, 10) != 10){
         exit(-1);
     }
 
-    close(fd);
+    fio::fclose(fd);
     return 0;
 }
 
 int test_nohole(){
-    int fd = create("nohole.txt");
+    int fd = fio::fcreate("nohole.txt");
     if(fd<0){
         return -1;
     }
 
     char buf[18394];
-    if(write(fd, buf, 18394)!=18394){
+    if(fio::fwrite(fd, buf, 18394)!=18394){
         return -1;
     }
 
-    close(fd);
+    fio::fclose(fd);
     return 0;
 }
 
