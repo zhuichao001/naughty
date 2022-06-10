@@ -5,21 +5,12 @@
 #include <pthread.h>
 #include <thread>
 
-long time_nsec(){
-    static struct timespec ts;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
-    return ts.tv_nsec;
-}
-
 const int N = 100000;
 int S[N]; //guarded by rwlock[N]
 pthread_rwlock_t rwlock[N];
 
-const long TIMEOUT_NS = 1*1000*1000; //1ms
-
 int sum_triple(const int i0, const int j){
     int err = 0;
-    long start = time_nsec();
     if(pthread_rwlock_trywrlock(&rwlock[j]) != 0){
         return -1; 
     }
