@@ -7,12 +7,20 @@
 #include "rwlock.h"
 
 const int N = 100000;
-int S[N]; //guarded by rwlock[N]
-rwlock_t rwlock[N];
+
+//int S[N]; //guarded by rwlock[N]
+//rwlock_t rwlock[N];
+
+typedef struct{
+    int val;
+    rwlock_t lock;
+}Int;
+
+Int integers[N];
 
 int sum_triple(const int i0, const int j){
     int err = 0;
-    if(rwlock[j].try_wlock() != 0){
+    if(integers[j].lock.try_wlock() != 0){
         return -1;
     }
 
@@ -20,7 +28,7 @@ int sum_triple(const int i0, const int j){
     for(; d<3; ++d){
         int i = (i0+d)%N;
         if(i!=j){
-            if(rwlock[i].try_rlock() != 0){
+            if(integers[i].lock.try_rlock() != 0){
                 err = -1;
                 break;
             }
@@ -28,17 +36,17 @@ int sum_triple(const int i0, const int j){
     }
 
     if(err==0){
-        S[j] = S[i0]+S[(i0+1)%N]+S[(i0+2)%N];
+        integers[j].val = integers[i0].val +  integers[(i0+1)%N].val + integers[(i0+2)%N].val;
     }
 
     for(--d; d>=0; --d){
         int i = (i0+d)%N;
         if(i!=j){
-            rwlock[i].runlock();
+            integers[i].lock.runlock();
         }
     }
 
-    rwlock[j].wunlock();
+    integers[j].lock.wunlock();
     return err;
 }
 
@@ -65,7 +73,7 @@ int main(int argc,char** argv) {
     fprintf(stderr, "M:%d\n", M);
 
     for(int i=0; i<N; ++i){
-        S[i] = 1;
+        integers[i].val = 1;
     }
 
     pthread_t tid[M];    
@@ -77,7 +85,7 @@ int main(int argc,char** argv) {
     }
 
     for(int i=0; i<N; ++i){
-        fprintf(stderr, "S[%d]:%d\n", i, S[i]);
+        fprintf(stderr, "S[%d]:%d\n", i, integers[i].val);
     }
     return 0;
 }
