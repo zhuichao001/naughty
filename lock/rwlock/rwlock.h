@@ -1,7 +1,10 @@
 #pragma once
 
+#include<atomic>
+#include<memory>
+
 typedef struct rwlock_t{
-    //0:no readers and writers; positive: n readers shared; -1: writer occupied
+    //0:no readers or writers; positive n: n readers shared; -1: one writer occupied
     std::atomic<int> rwcnt; 
 
     rwlock_t():
@@ -10,7 +13,7 @@ typedef struct rwlock_t{
 
     int try_rlock(){
         int previous;
-        while((previous = rwcnt.load(std::memory_acquire))>=0){
+        while((previous = rwcnt.load(std::memory_order_acquire))>=0){
             if(rwcnt.compare_exchange_strong(previous, previous+1, std::memory_order_acq_rel)){
                 return 0;
             }
@@ -19,26 +22,37 @@ typedef struct rwlock_t{
     }
 
     void rlock(){
-        while(rwcnt.load(std::memory_order_acquire)==-1){
-            asm volatile("pause" : : : "memory");
+        while(true){
+            int previous = rwcnt.load(std::memory_order_acquire);
+            if(previous<0){
+                asm volatile("pause" : : : "memory");
+                continue;
+            }
+            if(rwcnt.compare_exchange_strong(previous, previous+1, std::memory_order_acq_rel)){
+                return;
+            }
         }
-        ++rwcnt;
     }
 
     void runlock(){
-        std::atomic_thread_fence(std::memory_order_release);
         --rwcnt;
+        std::atomic_thread_fence(std::memory_order_release);
     }
 
     int try_wlock(){
-        if(rwcnt.load(std::memory_acquire)!=0){
+        if(rwcnt.load(std::memory_order_acquire)!=0){
             return -1;
         }
-        return 0;
+        int none = 0;
+        if(rwcnt.compare_exchange_strong(none, -1, std::memory_order_acq_rel)){
+            return 0;
+        }
+        return -1;
     }
 
     void wlock(){
-        while(rwcnt.compare_exchange_strong(0, -1, std::memory_order_acq_rel)){
+        int none = 0;
+        while(rwcnt.compare_exchange_strong(none, -1, std::memory_order_acq_rel)){
             asm volatile("pause" : : : "memory");
         }
     }
