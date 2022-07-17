@@ -1,6 +1,9 @@
 //lock-free but not wait-free
 //memory leak!!!
 
+#include <atomic>
+#include <memory>
+
 template <typename T>
 class lock_free_stack {
 private:
@@ -23,14 +26,14 @@ public:
         node *neo = new node(t);
         neo->next = head.load();
 
-        while(head.compare_exchange_weak(neo->next, neo){ } 
+        while(head.compare_exchange_weak(neo->next, neo)){ } 
     }
 
-    std::_shared_ptr<T> pop(){
+    std::shared_ptr<T> pop(){
         node *first = head.load();
         while(first && !head.compare_exchange_weak(first, first->next)){ }
 
-        return fist ? first->data : std::shared_ptr<T>();
+        return first ? first->data : std::shared_ptr<T>();
     }
 
 };
