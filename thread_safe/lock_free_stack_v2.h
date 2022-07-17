@@ -1,5 +1,5 @@
 //lock-free but not wait-free
-//fix：memory leak!!!
+//Use reference count to fix memory leak, Suitable for low-load scenarios
 
 #include <atomic>
 #include <memory>
