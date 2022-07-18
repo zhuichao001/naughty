@@ -4,6 +4,7 @@
 #include <atomic>
 #include <memory>
 #include <assert.h>
+#include <stdio.h>
 
 template <typename T>
 class lock_free_stack {
@@ -21,7 +22,9 @@ private:
 public:
     lock_free_stack():
         head(nullptr){
-        assert(std::atomic_is_lock_free(&head));
+        if(!std::atomic_is_lock_free(&head)){
+            fprintf(stderr, "Warning: atomic is not lock-free\n");
+        }
     }
 
     void push(const T &v){
