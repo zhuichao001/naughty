@@ -3,6 +3,7 @@
 
 #include <atomic>
 #include <memory>
+#include <assert.h>
 
 template <typename T>
 class lock_free_stack {
@@ -20,7 +21,7 @@ private:
 public:
     lock_free_stack():
         head(nullptr){
-        //assert(std::atomic_is_lock_free(&head));
+        assert(std::atomic_is_lock_free(&head));
     }
 
     void push(const T &v){
