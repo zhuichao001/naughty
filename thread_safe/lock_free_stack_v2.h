@@ -1,88 +1,70 @@
 //lock-free but not wait-free
-//Use reference count to release memory, Suitable for low-load scenarios
+//use reference counter to relaim
 
 #include <atomic>
 #include <memory>
 
-template <typename T>
+template<typename T>
 class lock_free_stack {
-private:
-    struct node_t {
+    struct snode_t;
+    struct snode_counter_t {
+        int external_count;
+        snode_t* ptr;
+    };
+
+    struct snode_t {
         std::shared_ptr<T> data;
-        node_t *next;
-        node_t(const T &v):
+        std::atomic<int> internal_count;
+        snode_counter_t next;
+        snode_t(T const &v):
             data(std::make_shared<T>(v)),
-            next(nullptr){
+            internal_count(0) {
         }
     };
 
-    std::atomic<node_t*> head;
-
+    std::atomic<snode_counter_t> head;
 private:
-    std::atomic<int> threads_poping;
-    std::atomic<node_t*> to_be_deleted;
-
-    void try_reclaim(node_t *node){
-        if(threads_poping==1){
-            node_t *unused = to_be_deleted.exchange(nullptr);
-            if(!--threads_poping){
-                delete_nodes(unused);
-            }else if(unused){
-                append_unused(unused);
-            }
-            delete node;
-        }else{
-            node->next = nullptr;
-            append_unused(node);
-            --threads_poping;
-        }
+    void increase_head_count(snode_counter_t& old_counter) {
+        snode_counter_t new_counter;
+        do{
+            new_counter = old_counter;
+            ++new_counter.external_count;
+        }while(!head.compare_exchange_strong(old_counter, new_counter));
+        old_counter.external_count = new_counter.external_count;
     }
-
-    static void delete_nodes(node_t *node){
-        while(node){
-            node_t *next = node->next;
-            delete node;
-            node = next;
-        }
-    }
-
-    void append_unused(node_t *node){
-        node_t *first = node;
-        node_t *last = node;
-        while(last->next){
-            last = last->next;
-        }
-
-        last->next = to_be_deleted;
-        while(to_be_deleted.compare_exchange_weak(last->next, first)){ }
-    }
-    
 public:
-    lock_free_stack():
-        head(nullptr),
-        threads_poping(0) {
+    ~lock_free_stack() {
+        while(pop());
     }
 
-    void push(const T &t){
-        node_t *neo = new node_t(t);
-        neo->next = head.load();
-
-        while(head.compare_exchange_weak(neo->next, neo)){ } 
+    void push(T const& data) {
+        snode_counter_t neo;
+        neo.ptr = new snode_t(data);
+        neo.external_count = 1;
+        neo.ptr->next = head.load();
+        while(!head.compare_exchange_weak(neo.ptr->next, neo));
     }
 
-    std::shared_ptr<T> pop(){
-        --threads_poping;
-        node_t *first = head.load();
-        while(first && !head.compare_exchange_weak(first, first->next)){ }
+    std::shared_ptr<T> pop() {
+        snode_counter_t old_head = head.load();
+        for(;;) {
+            increase_head_count(old_head);
+            snode_t* const ptr = old_head.ptr;
+            if(!ptr) {
+                return std::shared_ptr<T>();
+            }
+            if(head.compare_exchange_strong(old_head, ptr->next)) {
+                std::shared_ptr<T> res;
+                res.swap(ptr->data);
 
-        std::shared_ptr<T> res;
-        if(first){
-            res.swap(first->data);
-            first->next = nullptr;
+                const int count_increase = old_head.external_count-2;
+                if(ptr->internal_count.fetch_add(count_increase) == -count_increase) {
+                    delete ptr;
+                }
+                return res;
+            } else if(ptr->internal_count.fetch_sub(1)==1) {
+                delete ptr;
+            }
         }
-
-        try_reclaim(first);
-        return res;
     }
-
 };

@@ -1,4 +1,4 @@
-#include "lock_free_stack_v1.h"
+#include "lock_free_stack_v2.h"
 #include <iostream>
 #include <vector>
 #include <thread>
