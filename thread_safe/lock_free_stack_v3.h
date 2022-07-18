@@ -1,5 +1,5 @@
 //lock-free but not wait-free
-//Use hazard pointer to fix memory leak
+//Use hazard-pointer to release memory 
 
 #include <atomic>
 #include <memory>
@@ -8,33 +8,32 @@
 #include <thread>
 
 template<typename N> 
-void do_delete(void* p) { 
+void default_delete(void* p) { 
     delete static_cast<N*>(p); 
 }
 
-struct data_to_reclaim { 
-    void* data; 
+struct reclaim_t { 
+    void *data; 
     std::function<void(void*)> deleter; 
-    data_to_reclaim* next;
+    reclaim_t *next;
 
-    template<typename N> data_to_reclaim(N* p): // 1 
+    template<typename N> reclaim_t(N* p):
         data(p), 
-        deleter(&do_delete<N>), 
-        next(0) {
+        deleter(&default_delete<N>), 
+        next(nullptr) {
     }
 
-    ~data_to_reclaim() { 
-        deleter(data); // 2 
+    ~reclaim_t() { 
+        deleter(data);
     } 
 };
-
 
 struct hazard_t { 
     std::atomic<std::thread::id> id; 
     std::atomic<void*> pointer; 
 };
 
-unsigned const MAX_HAZARD_POINTERS=100; 
+unsigned const MAX_HAZARD_POINTERS=128; 
 hazard_t hazard_pointers[MAX_HAZARD_POINTERS]; 
 
 class hazard_owner { 
@@ -71,24 +70,26 @@ std::atomic<void*>& get_hazard_pointer_for_current_thread() {
     return hazard.get_pointer();
 }
 
+/******************Above is hazard pointer****************/
+
 template <typename T>
 class lock_free_stack {
 private:
-    struct node_t {
+    struct snode_t {
         std::shared_ptr<T> data;
-        node_t *next;
-        node_t(const T &v):
+        snode_t *next;
+        snode_t(const T &v):
             data(std::make_shared<T>(v)),
             next(nullptr){
         }
     };
 
-    std::atomic<node_t*> head;
+    std::atomic<snode_t*> head;
 
 private:
-    std::atomic<data_to_reclaim*> nodes_to_reclaim; 
+    std::atomic<reclaim_t*> reclaim_head; 
 
-    bool outstanding_hazard_pointers_for(void* p) {
+    bool unreleased_hazard_pointer(void* p) {
         for(unsigned i=0; i<MAX_HAZARD_POINTERS; ++i) {
             if(hazard_pointers[i].pointer.load()==p) {
                 return true;
@@ -97,26 +98,26 @@ private:
         return false;
     }
 
-    void add_to_reclaim_list(data_to_reclaim* node){
-        node->next=nodes_to_reclaim.load(); 
-        while(!nodes_to_reclaim.compare_exchange_weak(node->next, node)); 
+    void add_to_reclaim_list(reclaim_t* node){
+        node->next = reclaim_head.load(); 
+        while(!reclaim_head.compare_exchange_weak(node->next, node)); 
     }
     
     template<typename N> 
     void reclaim_later(N* data){
-        add_to_reclaim_list(new data_to_reclaim(data));
+        add_to_reclaim_list(new reclaim_t(data));
     }
     
     void delete_nodes_with_no_hazards(){
-        data_to_reclaim* current=nodes_to_reclaim.exchange(nullptr);
+        reclaim_t* current = reclaim_head.exchange(nullptr);
         while(current){
-            data_to_reclaim* const next=current->next;
-            if(!outstanding_hazard_pointers_for(current->data)){
+            reclaim_t* const next=current->next;
+            if(!unreleased_hazard_pointer(current->data)){
                 delete current;
             }else{
                 add_to_reclaim_list(current);
             }
-            current=next;
+            current = next;
         }
     }
 
@@ -126,7 +127,7 @@ public:
     }
 
     void push(const T &t){
-        node_t *neo = new node_t(t);
+        snode_t *neo = new snode_t(t);
         neo->next = head.load();
 
         while(head.compare_exchange_weak(neo->next, neo)){ } 
@@ -134,9 +135,9 @@ public:
 
     std::shared_ptr<T> pop(){
         std::atomic<void*>& hp = get_hazard_pointer_for_current_thread(); 
-        node_t *old_head = head.load(); 
+        snode_t *old_head = head.load(); 
         do{ 
-            node_t *temp; 
+            snode_t *temp; 
             do{
                 temp = old_head; 
                 hp.store(old_head); 
@@ -148,12 +149,13 @@ public:
         std::shared_ptr<T> res;
         if(old_head){
             res.swap(old_head->data);
-            if(outstanding_hazard_pointers_for(old_head)){
+            if(unreleased_hazard_pointer(old_head)){
                 reclaim_later(old_head);
             }else{ 
                 delete old_head;
             }
             delete_nodes_with_no_hazards();
-        }return res;
+        }
+        return res;
     }
 };
