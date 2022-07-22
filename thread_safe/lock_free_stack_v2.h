@@ -1,5 +1,5 @@
 //lock-free but not wait-free
-//use reference counter to relaim
+//use reference-counter to relaim
 
 #include <atomic>
 #include <memory>
@@ -50,19 +50,19 @@ public:
         for(;;) {
             increase_head_count(old_head);
             snode_t* const ptr = old_head.ptr;
-            if(!ptr) {
+            if(!ptr){
                 return std::shared_ptr<T>();
             }
-            if(head.compare_exchange_strong(old_head, ptr->next, std::memory_order_relaxed)) {
+            if(head.compare_exchange_strong(old_head, ptr->next, std::memory_order_relaxed)){
                 std::shared_ptr<T> res;
                 res.swap(ptr->data);
 
                 const int count_increase = old_head.external_count-2;
-                if(ptr->internal_count.fetch_add(count_increase, std::memory_order_release) == -count_increase) {
+                if(ptr->internal_count.fetch_add(count_increase, std::memory_order_release) == -count_increase){
                     delete ptr;
                 }
                 return res;
-            } else if(ptr->internal_count.fetch_sub(1, std::memory_order_relaxed)==1) {
+            }else if(ptr->internal_count.fetch_sub(1, std::memory_order_relaxed)==1){
                 ptr->internal_count.load(std::memory_order_acquire);
                 delete ptr;
             }

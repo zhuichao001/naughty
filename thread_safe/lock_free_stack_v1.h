@@ -1,5 +1,6 @@
 //lock-free but not wait-free
 //use shared_ptr to relaim
+//premise: std::shared_ptr<T> should be atomic-lock-free
 
 #include <atomic>
 #include <memory>
