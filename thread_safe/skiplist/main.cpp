@@ -1,7 +1,6 @@
 #include "skiplist.h"
+#include <string>
 #include <iostream>
-
-using namespace std;
 
 using Skiplist = skiplist_t<std::string, std::string>;
 
@@ -50,10 +49,10 @@ void test(){
 
     node_t<std::string, std::string> *t = sk.find("e");
     if (t==NULL) {
-        cout << " not foud " << endl;
+        std::cout << " not foud " << std::endl;
         return;
     }
-    cout << t->key << " " << t->val << endl;
+    std::cout << t->key << " " << t->val << std::endl;
 }
 
 int main(){

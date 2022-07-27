@@ -7,41 +7,45 @@
 #include <iostream>
 #include <atomic>
 #include <string>
+#include <memory>
+
 
 template<typename S, typename T>
 struct node_t {
+    struct node_link_t{
+        node_t **forwards; // next for i'th layer
+        node_link_t(int level){
+            forwards = new node_t*[level];
+            for (int i=0; i<level; ++i) {
+                forwards[i] = nullptr;
+            }
+        }
+    };
+
     S key;
     T val;
     uint64_t sn;
     int level;
-    node_t **forwards; // next for i'th layer
+    std::shared_ptr<node_link_t> link;
+    node_t *next;  //link different version of same key
 
     node_t(uint64_t seqno, int lev, const S &k, const T &v=""):
         key(k),
         val(v),
         sn(seqno),
-        level(lev) {
-        forwards = new node_t*[level];
-        for (int i=0; i<level; ++i) {
-            forwards[i] = nullptr;
-        }
-    }
-
-    ~node_t(){
-        delete []forwards;
-    }
-
-    node_t<S,T> *next(){
-        return forwards[0];
+        level(lev),
+        link(new node_link_t(lev)),
+        next(nullptr) {
     }
 
     void print(){
         std::cout << "[node] key:" << key << std::endl;
         for(int i=0; i<level; ++i){
-            std::cout << "    i:" << i << ", next:" << forwards[i] << std::endl;
+            std::cout << "    i:" << i << ", sibling:" << link->forwards[i] << std::endl;
         }
     }
 };
+
 
 template<typename S, typename T>
 struct skiplist_t {
@@ -64,7 +68,7 @@ struct skiplist_t {
         head = new node_t<S,T>(0, MAXHEIGHT, "");
         nil = new node_t<S,T>(0, MAXHEIGHT, std::string(2048, '\xff'));  //FIXME
         for (int i=0; i<MAXHEIGHT; ++i) {
-            head->forwards[i] = nil;
+            head->link->forwards[i] = nil;
         }
     }
 
@@ -87,11 +91,11 @@ struct skiplist_t {
     node_t<S,T> *find(const std::string &k) {
         node_t<S,T> *cur = this->head;
         for (int i=this->height-1; i>=0; --i) {
-            while (cur->forwards[i]->key<k) {
-                cur = cur->forwards[i];
+            while (cur->link->forwards[i]->key<k) {
+                cur = cur->link->forwards[i];
             }
-            if (cur->forwards[i]->key==k) {
-                return cur->forwards[i];
+            if (cur->link->forwards[i]->key==k) {
+                return cur->link->forwards[i];
             }
         }
         return nullptr;
@@ -102,8 +106,8 @@ struct skiplist_t {
         node_t<S,T> *cur = this->head;
     
         for (int i=this->height-1; i>=0; --i) {
-            while (cur->forwards[i]->key < k) {
-                cur = cur->forwards[i];
+            while (cur->link->forwards[i]->key < k) {
+                cur = cur->link->forwards[i];
             }
             update[i] = cur;
         }
@@ -111,13 +115,13 @@ struct skiplist_t {
         const int h = rand_level();
         node_t<S,T> * neo = new node_t<S,T>(0, h, k, v); //FIXME
         for(int i=0; i<std::min(this->height, h); ++i){
-            neo->forwards[i] = update[i]->forwards[i];
-            update[i]->forwards[i] = neo;
+            neo->link->forwards[i] = update[i]->link->forwards[i];
+            update[i]->link->forwards[i] = neo;
         }
     
         for (int i=0; i<h; ++i) {
-            neo->forwards[i] = update[i]->forwards[i];
-            update[i]->forwards[i] = neo;
+            neo->link->forwards[i] = update[i]->link->forwards[i];
+            update[i]->link->forwards[i] = neo;
         }
         this->height = std::max(this->height, h);
         ++this->length;
@@ -129,17 +133,17 @@ struct skiplist_t {
         node_t<S,T> *cur = this->head;
 
         for (int i=this->height-1; i>=0; --i) {
-            while (cur->forwards[i]->key < key) {
-                cur = cur->forwards[i];
+            while (cur->link->forwards[i]->key < key) {
+                cur = cur->link->forwards[i];
             }
             update[i] = cur;
         }
     
-        if (cur->forwards[0]->key != key) { //update
+        if (cur->link->forwards[0]->key != key) { //update
             return false;
         }
 
-        node_t<S,T> *dst = cur->forwards[0];
+        node_t<S,T> *dst = cur->link->forwards[0];
         for (int i=0; i<this->height; ++i) {
             if (update[i]->forward[i] != dst) {
                 break;
@@ -155,13 +159,13 @@ struct skiplist_t {
     }
 
     void clear(){
-        node_t<S, T> *cur = head->forwards[0];
+        node_t<S, T> *cur = head->link->forwards[0];
         while(cur!=nil){
             node_t<S, T> *tmp = cur;
-            cur = cur->forwards[0];
+            cur = cur->link->forwards[0];
             delete tmp;
         }
-        head->forwards[0] = nil;
+        head->link->forwards[0] = nil;
     }
 
     void print(){
@@ -171,7 +175,7 @@ struct skiplist_t {
             node_t<S,T> *cur = this->head;
             while(cur != this->nil){
                 std::cout << cur->key << ":" << cur->val << " |-> ";
-                cur = cur->forwards[i];
+                cur = cur->link->forwards[i];
             }
             std::cout << "nil" << std::endl;
         }
