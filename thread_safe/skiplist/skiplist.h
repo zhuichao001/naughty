@@ -103,22 +103,36 @@ struct skiplist_t {
 
     node_t<S,T> *insert(const std::string &k, const std::string &v){
         node_t<S,T> *update[this->MAXHEIGHT];
+        node_t<S,T> *prev = this->head;
         node_t<S,T> *cur = this->head;
     
         for (int i=this->height-1; i>=0; --i) {
             while (cur->link->forwards[i]->key < k) {
+                prev = cur;
                 cur = cur->link->forwards[i];
             }
             update[i] = cur;
         }
     
+        //update for same key
+        if(cur->link->forwards[0]->key==k){
+            node_t<S,T> * neo = new node_t<S,T>(0, cur->level, k, v); //FIXME
+            neo->link = cur->link;
+            for(int i=0; i<prev->level; ++i){
+                if(prev->link->forwards[i]==cur){ //TODO atomic
+                    prev->link->forwards[i] = neo;
+                }
+            }
+            return neo;
+        }
+
+        //insert new key
         const int h = rand_level();
         node_t<S,T> * neo = new node_t<S,T>(0, h, k, v); //FIXME
-        for(int i=0; i<std::min(this->height, h); ++i){
-            neo->link->forwards[i] = update[i]->link->forwards[i];
-            update[i]->link->forwards[i] = neo;
+        for (int i=this->height; i<h; ++i) {
+            update[i] = this->head;
         }
-    
+
         for (int i=0; i<h; ++i) {
             neo->link->forwards[i] = update[i]->link->forwards[i];
             update[i]->link->forwards[i] = neo;
