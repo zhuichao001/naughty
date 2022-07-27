@@ -4,6 +4,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+//conclusion: Will not extend sub threads from parent process
+
 int gi = 0;
 
 void *print(void *args){
