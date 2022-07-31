@@ -8,44 +8,62 @@
 #include <atomic>
 #include <string>
 #include <memory>
+#include "runtime_info.h"
 
+enum ENTRY_TYPE{
+    ENTRY_DATA = 0,
+    ENTRY_DEL = 1,
+};
+
+template<typename S, typename T>
+struct data_entry_t{
+    const uint64_t sn;
+    const ENTRY_TYPE kvtype;
+    const S key;
+    T val;
+    data_entry_t<S,T>* next;
+
+    data_entry_t(const uint64_t seqno, const ENTRY_TYPE type, const S &k, const T &v):
+        sn(seqno),
+        kvtype(type),
+        key(k),
+        val(v),
+        next(nullptr){
+    }
+};
 
 template<typename S, typename T>
 struct node_t {
     struct node_link_t{
-        node_t **forwards; // next for i'th layer
+        std::atomic<node_t<S,T> *> *forwards; // next for i'th layer
+        std::atomic<node_t<S,T> *> *backwards; // previous for i'th layer
         node_link_t(int level){
-            forwards = new node_t*[level];
+            forwards = new std::atomic<node_t<S,T>*>[level];
+            backwards = new std::atomic<node_t<S,T>*>[level];
             for (int i=0; i<level; ++i) {
                 forwards[i] = nullptr;
+                backwards[i] = nullptr;
             }
         }
     };
 
-    S key;
-    T val;
-    uint64_t sn;
-    int level;
+    const int level;
+    std::atomic<data_entry_t<S,T>*> data;
     std::shared_ptr<node_link_t> link;
-    node_t *next;  //link different version of same key
 
-    node_t(uint64_t seqno, int lev, const S &k, const T &v=""):
-        key(k),
-        val(v),
-        sn(seqno),
+    node_t(const uint64_t seqno, const int lev, const ENTRY_TYPE type, const S &k, const T &v=""):
         level(lev),
-        link(new node_link_t(lev)),
-        next(nullptr) {
+        data(new struct data_entry_t<S,T>(seqno, type, k, v)),
+        link(new struct node_link_t(lev)) {
     }
 
     void print(){
-        std::cout << "[node] key:" << key << std::endl;
+        std::cout << "[node] key:" << data.load()->key << std::endl;
         for(int i=0; i<level; ++i){
             std::cout << "    i:" << i << ", sibling:" << link->forwards[i] << std::endl;
         }
     }
 };
-
 
 template<typename S, typename T>
 struct skiplist_t {
@@ -65,8 +83,8 @@ struct skiplist_t {
         WIDTH(width),
         height(1),
         length(0) {
-        head = new node_t<S,T>(0, MAXHEIGHT, "");
-        nil = new node_t<S,T>(0, MAXHEIGHT, std::string(2048, '\xff'));  //FIXME
+        head = new node_t<S,T>(0, MAXHEIGHT, ENTRY_DATA, "");
+        nil = new node_t<S,T>(0, MAXHEIGHT, ENTRY_DATA, std::string(1024, '\xff'));
         for (int i=0; i<MAXHEIGHT; ++i) {
             head->link->forwards[i] = nil;
         }
@@ -88,88 +106,26 @@ struct skiplist_t {
         return h;
     }
 
-    node_t<S,T> *find(const std::string &k) {
-        node_t<S,T> *cur = this->head;
-        for (int i=this->height-1; i>=0; --i) {
-            while (cur->link->forwards[i]->key<k) {
-                cur = cur->link->forwards[i];
-            }
-            if (cur->link->forwards[i]->key==k) {
-                return cur->link->forwards[i];
-            }
+    int get(const std::string &k, std::string &v) {
+        node_t<S,T> *prev = previous(0, k);
+        if(prev==nullptr){
+            return -1;
         }
-        return nullptr;
+        node_t<S,T> *cur = prev->link->forwards[0].load(std::memory_order_acquire);
+        data_entry_t<S,T> *dat = cur->data.load(std::memory_order_acquire);
+        if(dat->key==k && dat->kvtype==ENTRY_DATA){
+            v = dat->val;
+            return 0;
+        }
+        return -1;
     }
 
-    node_t<S,T> *insert(const std::string &k, const std::string &v){
-        node_t<S,T> *update[this->MAXHEIGHT];
-        node_t<S,T> *prev = this->head;
-        node_t<S,T> *cur = this->head;
-    
-        for (int i=this->height-1; i>=0; --i) {
-            while (cur->link->forwards[i]->key < k) {
-                prev = cur;
-                cur = cur->link->forwards[i];
-            }
-            update[i] = cur;
-        }
-    
-        //update for same key
-        if(cur->link->forwards[0]->key==k){
-            node_t<S,T> * neo = new node_t<S,T>(0, cur->level, k, v); //FIXME
-            neo->link = cur->link;
-            for(int i=0; i<prev->level; ++i){
-                if(prev->link->forwards[i]==cur){ //TODO atomic
-                    prev->link->forwards[i] = neo;
-                }
-            }
-            return neo;
-        }
-
-        //insert new key
-        const int h = rand_level();
-        node_t<S,T> * neo = new node_t<S,T>(0, h, k, v); //FIXME
-        for (int i=this->height; i<h; ++i) {
-            update[i] = this->head;
-        }
-
-        for (int i=0; i<h; ++i) {
-            neo->link->forwards[i] = update[i]->link->forwards[i];
-            update[i]->link->forwards[i] = neo;
-        }
-        this->height = std::max(this->height, h);
-        ++this->length;
-        return neo;
+    void put(const std::string &key, const std::string &val){
+        insert(ENTRY_DATA, key, val);
     }
 
-    bool erase(const S &key) {
-        node_t<S,T> *update[this->MAXHEIGHT];
-        node_t<S,T> *cur = this->head;
-
-        for (int i=this->height-1; i>=0; --i) {
-            while (cur->link->forwards[i]->key < key) {
-                cur = cur->link->forwards[i];
-            }
-            update[i] = cur;
-        }
-    
-        if (cur->link->forwards[0]->key != key) { //update
-            return false;
-        }
-
-        node_t<S,T> *dst = cur->link->forwards[0];
-        for (int i=0; i<this->height; ++i) {
-            if (update[i]->forward[i] != dst) {
-                break;
-            }
-            update[i]->forward[i] = dst->forward[i];
-        }
-
-        delete dst;
-        while (this->height>1 && this->head->forward[height-1]==nil) {
-            --this->height;
-        }
-        --this->length;
+    void remove(const std::string &key){
+        insert(ENTRY_DEL, key, "");
     }
 
     void clear(){
@@ -188,10 +144,58 @@ struct skiplist_t {
         for(int i=this->height-1; i>=0; --i){
             node_t<S,T> *cur = this->head;
             while(cur != this->nil){
-                std::cout << cur->key << ":" << cur->val << " |-> ";
+                std::cout << cur->data.load()->key << ":" << cur->data.load()->val << " |-> ";
                 cur = cur->link->forwards[i];
             }
             std::cout << "nil" << std::endl;
         }
     }
+
+private:
+    node_t<S,T> *previous(const int level, const std::string &k){
+        assert(level<=this->height-1);
+        node_t<S,T> *node = this->head;
+        for (int i=this->height-1; i>=level; --i) {
+            node_t<S,T> *tmp = node->link->forwards[i].load(std::memory_order_acquire);
+            data_entry_t<S,T> *data = tmp->data.load(std::memory_order_acquire);
+            while (data->key < k) {
+                node = node->link->forwards[i];
+            }
+        }
+        return node;
+    }
+
+    void insert(const ENTRY_TYPE type, const std::string &k, const std::string &v){
+        uint64_t sn = incr_global_sn();
+        node_t<S,T> *prev = previous(0, k);
+        node_t<S,T> *cur = prev->link->forwards[0].load(std::memory_order_acquire);
+
+        //exist same key
+        if(cur->data.load(std::memory_order_acquire)->key==k){
+            data_entry_t<S,T> *newdat = new data_entry_t<S,T>(sn, type, k, v);
+            newdat->next = cur->data.load(std::memory_order_relaxed);
+            while(!cur->data.compare_exchange_weak(newdat->next, newdat));
+            return ;
+        }
+
+        //insert new key
+        const int lev = rand_level();
+        node_t<S,T> * neo = new node_t<S,T>(sn, lev, ENTRY_DATA, k, v); //FIXME
+        neo->link->forwards[0] = cur;
+        while(!prev->link->forwards[0].compare_exchange_weak(cur, neo)){
+            neo->link->forwards[0] = cur;
+        }
+
+        for (int i=1; i<lev; ++i) {//build index
+            node_t<S,T> *iprev = previous(i, k);
+            node_t<S,T> *icur = iprev->link->forwards[0].load(std::memory_order_acquire);
+            while(!iprev->link->forwards[i].compare_exchange_weak(icur, neo)){
+                iprev->link->forwards[i] = icur;
+            }
+        }
+
+        this->height = std::max(this->height, lev);
+        ++this->length;
+    }
+
 };

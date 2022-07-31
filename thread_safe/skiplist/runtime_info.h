@@ -1,0 +1,95 @@
+#pragma once
+#include <assert.h>
+#include <thread>
+#include <map>
+#include <list>
+#include <unordered_map>
+
+struct runtime_info_t;
+std::unordered_map<std::thread::id, runtime_info_t*> runtime_map;
+
+struct snapshot_t;
+std::list<snapshot_t*> snapshot_list;
+
+uint64_t incr_global_sn(){
+    static std::atomic<uint64_t> global_sn;
+    return ++global_sn;
+}
+
+struct snapshot_t {
+    uint64_t sn;
+    snapshot_t(uint64_t seqno):
+        sn(seqno) {
+    }
+};
+
+snapshot_t *create_snapshot(){
+    uint64_t sn = incr_global_sn();
+    snapshot_t * ss = new snapshot_t(sn);
+    snapshot_list.push_back(ss);
+    return ss;
+}
+
+struct runtime_info_t {
+    std::thread::id tid;
+    uint64_t sn;
+
+    runtime_info_t():
+        sn(0) {
+        tid = std::this_thread::get_id();
+    }
+
+    void set_sn(uint64_t seqno){
+        assert(seqno>sn);
+        sn = seqno;
+    }
+
+    uint64_t get_sn(){
+        return sn;
+    }
+};
+
+runtime_info_t *create_runtime_info(){
+    std::thread::id tid = std::this_thread::get_id();
+    if(runtime_map.find(tid) == runtime_map.end()){
+        runtime_info_t *res = new runtime_info_t();
+        runtime_map[tid] = res;
+        return res;
+    }else{
+        return runtime_map[tid];
+    }
+}
+
+uint64_t min_runtime_sn(){
+    uint64_t min_sn = ~0;
+    for(auto x: runtime_map){
+        runtime_info_t *ri = x.second;
+        uint64_t sn = ri->get_sn();
+        if(sn!=0 && sn<min_sn){
+            min_sn = sn;
+        }
+    }
+    return min_sn;
+}
+
+runtime_info_t *get_runtime_info(){
+    thread_local static std::unique_ptr<runtime_info_t> ri(create_runtime_info());
+    return ri.get();
+}
+
+void ebr_enter(){
+    get_runtime_info()->set_sn(incr_global_sn());
+}
+
+void ebr_leave(){
+    get_runtime_info()->set_sn(0);
+}
+
+class ebr_guard{
+    ebr_guard(){
+        ebr_enter();
+    }
+    ~ebr_guard(){
+        ebr_leave();
+    }
+};
