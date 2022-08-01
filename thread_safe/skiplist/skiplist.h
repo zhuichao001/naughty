@@ -34,33 +34,29 @@ struct data_entry_t{
 
 template<typename S, typename T>
 struct node_t {
-    struct node_link_t{
-        std::atomic<node_t<S,T> *> *forwards; // next for i'th layer
-        std::atomic<node_t<S,T> *> *backwards; // previous for i'th layer
-        node_link_t(int level){
-            forwards = new std::atomic<node_t<S,T>*>[level];
-            backwards = new std::atomic<node_t<S,T>*>[level];
-            for (int i=0; i<level; ++i) {
-                forwards[i] = nullptr;
-                backwards[i] = nullptr;
-            }
-        }
-    };
-
     const int level;
     std::atomic<data_entry_t<S,T>*> data;
-    std::shared_ptr<node_link_t> link;
+    std::atomic<node_t<S,T> *> *forwards; // next for i'th layer
 
     node_t(const uint64_t seqno, const int lev, const ENTRY_TYPE type, const S &k, const T &v=""):
         level(lev),
-        data(new struct data_entry_t<S,T>(seqno, type, k, v)),
-        link(new struct node_link_t(lev)) {
+        data(new struct data_entry_t<S,T>(seqno, type, k, v)) {
+        forwards = new std::atomic<node_t<S,T>*>[level];
+    }
+
+    ~node_t(){
+        data_entry_t<S,T> *ptr = data.load(std::memory_order_acquire);
+        while(ptr!=nullptr){
+            data_entry_t<S,T> *tmp = ptr;
+            ptr = ptr->next;
+            delete tmp;
+        }
     }
 
     void print(){
         std::cout << "[node] key:" << data.load()->key << std::endl;
         for(int i=0; i<level; ++i){
-            std::cout << "    i:" << i << ", sibling:" << link->forwards[i] << std::endl;
+            std::cout << "    i:" << i << ", sibling:" << forwards[i] << std::endl;
         }
     }
 };
@@ -86,12 +82,18 @@ struct skiplist_t {
         head = new node_t<S,T>(0, MAXHEIGHT, ENTRY_DATA, "");
         nil = new node_t<S,T>(0, MAXHEIGHT, ENTRY_DATA, std::string(1024, '\xff'));
         for (int i=0; i<MAXHEIGHT; ++i) {
-            head->link->forwards[i] = nil;
+            head->forwards[i] = nil;
+            nil->forwards[i] = nullptr;
         }
     }
 
     ~skiplist_t(){
-        clear(); //TODO
+        node_t<S, T> *cur = head->forwards[0];
+        while(cur!=nil){
+            node_t<S, T> *tmp = cur;
+            cur = cur->forwards[0];
+            delete tmp;
+        }
         delete head;
         delete nil;
     }
@@ -111,7 +113,7 @@ struct skiplist_t {
         if(prev==nullptr){
             return -1;
         }
-        node_t<S,T> *cur = prev->link->forwards[0].load(std::memory_order_acquire);
+        node_t<S,T> *cur = prev->forwards[0].load(std::memory_order_acquire);
         data_entry_t<S,T> *dat = cur->data.load(std::memory_order_acquire);
         if(dat->key==k && dat->kvtype==ENTRY_DATA){
             v = dat->val;
@@ -128,16 +130,6 @@ struct skiplist_t {
         insert(ENTRY_DEL, key, "");
     }
 
-    void clear(){
-        node_t<S, T> *cur = head->link->forwards[0];
-        while(cur!=nil){
-            node_t<S, T> *tmp = cur;
-            cur = cur->link->forwards[0];
-            delete tmp;
-        }
-        head->link->forwards[0] = nil;
-    }
-
     void print(){
         std::cout << "level:" << this->height 
             << ",length:" << this->length << std::endl;
@@ -145,7 +137,7 @@ struct skiplist_t {
             node_t<S,T> *cur = this->head;
             while(cur != this->nil){
                 std::cout << cur->data.load()->key << ":" << cur->data.load()->val << " |-> ";
-                cur = cur->link->forwards[i];
+                cur = cur->forwards[i];
             }
             std::cout << "nil" << std::endl;
         }
@@ -156,10 +148,10 @@ private:
         assert(level<=this->height-1);
         node_t<S,T> *node = this->head;
         for (int i=this->height-1; i>=level; --i) {
-            node_t<S,T> *tmp = node->link->forwards[i].load(std::memory_order_acquire);
+            node_t<S,T> *tmp = node->forwards[i].load(std::memory_order_acquire);
             data_entry_t<S,T> *data = tmp->data.load(std::memory_order_acquire);
             while (data->key < k) {
-                node = node->link->forwards[i];
+                node = node->forwards[i];
             }
         }
         return node;
@@ -168,7 +160,7 @@ private:
     void insert(const ENTRY_TYPE type, const std::string &k, const std::string &v){
         uint64_t sn = incr_global_sn();
         node_t<S,T> *prev = previous(0, k);
-        node_t<S,T> *cur = prev->link->forwards[0].load(std::memory_order_acquire);
+        node_t<S,T> *cur = prev->forwards[0].load(std::memory_order_acquire);
 
         //exist same key
         if(cur->data.load(std::memory_order_acquire)->key==k){
@@ -181,16 +173,16 @@ private:
         //insert new key
         const int lev = rand_level();
         node_t<S,T> * neo = new node_t<S,T>(sn, lev, ENTRY_DATA, k, v); //FIXME
-        neo->link->forwards[0] = cur;
-        while(!prev->link->forwards[0].compare_exchange_weak(cur, neo)){
-            neo->link->forwards[0] = cur;
+        neo->forwards[0] = cur;
+        while(!prev->forwards[0].compare_exchange_weak(cur, neo)){
+            neo->forwards[0] = cur;
         }
 
         for (int i=1; i<lev; ++i) {//build index
             node_t<S,T> *iprev = previous(i, k);
-            node_t<S,T> *icur = iprev->link->forwards[0].load(std::memory_order_acquire);
-            while(!iprev->link->forwards[i].compare_exchange_weak(icur, neo)){
-                iprev->link->forwards[i] = icur;
+            node_t<S,T> *icur = iprev->forwards[0].load(std::memory_order_acquire);
+            while(!iprev->forwards[i].compare_exchange_weak(icur, neo)){
+                iprev->forwards[i] = icur;
             }
         }
 
