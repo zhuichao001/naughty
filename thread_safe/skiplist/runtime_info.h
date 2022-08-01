@@ -11,9 +11,13 @@ std::unordered_map<std::thread::id, runtime_info_t*> runtime_map;
 struct snapshot_t;
 std::list<snapshot_t*> snapshot_list;
 
-uint64_t incr_global_sn(){
+uint64_t incr_global_sn(int by=0){
     static std::atomic<uint64_t> global_sn;
-    return ++global_sn;
+    if (by==0) {
+        return ++global_sn;
+    } else {
+        return global_sn;
+    }
 }
 
 struct snapshot_t {
@@ -24,7 +28,7 @@ struct snapshot_t {
 };
 
 snapshot_t *create_snapshot(){
-    uint64_t sn = incr_global_sn();
+    uint64_t sn = incr_global_sn(0);
     snapshot_t * ss = new snapshot_t(sn);
     snapshot_list.push_back(ss);
     return ss;
@@ -77,19 +81,29 @@ runtime_info_t *get_runtime_info(){
     return ri.get();
 }
 
-void ebr_enter(){
-    get_runtime_info()->set_sn(incr_global_sn());
+void ebr_enter(int by=0){
+    get_runtime_info()->set_sn(incr_global_sn(by));
 }
 
 void ebr_leave(){
     get_runtime_info()->set_sn(0);
 }
 
-class ebr_guard{
-    ebr_guard(){
-        ebr_enter();
+enum class RW_TYPE{
+    READ = 0,
+    WRITE = 1,
+};
+
+class ebr_guard_t{
+public:
+    ebr_guard_t(RW_TYPE rwtype){
+        if (rwtype==RW_TYPE::READ) {
+            ebr_enter(0);
+        } else {
+            ebr_enter(1);
+        }
     }
-    ~ebr_guard(){
+    ~ebr_guard_t(){
         ebr_leave();
     }
 };

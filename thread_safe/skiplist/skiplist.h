@@ -35,7 +35,7 @@ struct data_entry_t{
 template<typename S, typename T>
 struct node_t {
     const int level;
-    std::atomic<data_entry_t<S,T>*> data;
+    std::atomic<data_entry_t<S,T> *> data;
     std::atomic<node_t<S,T> *> *forwards; // next for i'th layer
 
     node_t(const uint64_t seqno, const int lev, const ENTRY_TYPE type, const S &k, const T &v=""):
@@ -72,8 +72,6 @@ struct skiplist_t {
     int length;
     int height;
 
-    std::atomic<uint64_t> sn_line;
-
     skiplist_t(int maxh=16, int width=4):
         MAXHEIGHT(maxh),
         WIDTH(width),
@@ -89,7 +87,7 @@ struct skiplist_t {
 
     ~skiplist_t(){
         node_t<S, T> *cur = head->forwards[0];
-        while(cur!=nil){
+        while (cur!=nil) {
             node_t<S, T> *tmp = cur;
             cur = cur->forwards[0];
             delete tmp;
@@ -109,10 +107,13 @@ struct skiplist_t {
     }
 
     int get(const std::string &k, std::string &v) {
+        ebr_guard_t g(RW_TYPE::READ);
+
         node_t<S,T> *prev = previous(0, k);
         if(prev==nullptr){
             return -1;
         }
+
         node_t<S,T> *cur = prev->forwards[0].load(std::memory_order_acquire);
         data_entry_t<S,T> *dat = cur->data.load(std::memory_order_acquire);
         if(dat->key==k && dat->kvtype==ENTRY_DATA){
@@ -123,10 +124,14 @@ struct skiplist_t {
     }
 
     void put(const std::string &key, const std::string &val){
+        ebr_guard_t g(RW_TYPE::WRITE);
+
         insert(ENTRY_DATA, key, val);
     }
 
     void remove(const std::string &key){
+        ebr_guard_t g(RW_TYPE::WRITE);
+
         insert(ENTRY_DEL, key, "");
     }
 
@@ -158,7 +163,8 @@ private:
     }
 
     void insert(const ENTRY_TYPE type, const std::string &k, const std::string &v){
-        uint64_t sn = incr_global_sn();
+        uint64_t sn = get_runtime_info()->get_sn();
+
         node_t<S,T> *prev = previous(0, k);
         node_t<S,T> *cur = prev->forwards[0].load(std::memory_order_acquire);
 
