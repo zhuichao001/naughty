@@ -1,4 +1,5 @@
 #pragma once
+
 #include <assert.h>
 #include <thread>
 #include <map>
@@ -7,32 +8,6 @@
 
 struct runtime_info_t;
 std::unordered_map<std::thread::id, runtime_info_t*> runtime_map;
-
-struct snapshot_t;
-std::list<snapshot_t*> snapshot_list;
-
-uint64_t incr_global_sn(int by=0){
-    static std::atomic<uint64_t> global_sn;
-    if (by==0) {
-        return ++global_sn;
-    } else {
-        return global_sn;
-    }
-}
-
-struct snapshot_t {
-    uint64_t sn;
-    snapshot_t(uint64_t seqno):
-        sn(seqno) {
-    }
-};
-
-snapshot_t *create_snapshot(){
-    uint64_t sn = incr_global_sn(0);
-    snapshot_t * ss = new snapshot_t(sn);
-    snapshot_list.push_back(ss);
-    return ss;
-}
 
 struct runtime_info_t {
     std::thread::id tid;
@@ -64,6 +39,13 @@ runtime_info_t *create_runtime_info(){
     }
 }
 
+runtime_info_t *get_runtime_info(){
+    thread_local static std::unique_ptr<runtime_info_t> ri(create_runtime_info());
+    return ri.get();
+}
+
+////////////////////////////////////////////////////
+
 uint64_t min_runtime_sn(){
     uint64_t min_sn = ~0;
     for(auto x: runtime_map){
@@ -76,9 +58,13 @@ uint64_t min_runtime_sn(){
     return min_sn;
 }
 
-runtime_info_t *get_runtime_info(){
-    thread_local static std::unique_ptr<runtime_info_t> ri(create_runtime_info());
-    return ri.get();
+uint64_t incr_global_sn(int by=0){
+    static std::atomic<uint64_t> global_sn;
+    if (by==0) {
+        return ++global_sn;
+    } else {
+        return global_sn;
+    }
 }
 
 void ebr_enter(int by=0){
