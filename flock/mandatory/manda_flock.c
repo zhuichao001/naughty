@@ -10,6 +10,7 @@ int wlock(struct flock *fl, int fd){
     fl->l_start = 0;
     fl->l_len = 0;
 
+    //cmd: F_SETLK, FSETLKW, FGETLK
     if(fcntl(fd, F_SETLKW, fl) == -1){
         perror("fcntl F_SETLKW");
         return -1;
