@@ -62,6 +62,18 @@ int thread_rwlock_destroy(thread_rwlock_t *rw) {
     return(0);
 }
 
+static void rwlock_cancel_rdwait(void *arg){
+    thread_rwlock_t *rw = (thread_rwlock_t *)arg;
+    rw->rw_nwaitreaders--;
+    pthread_mutex_unlock(&rw->rw_mutex);
+}
+
+static void rwlock_cancel_wrwait(void *arg){
+    thread_rwlock_t *rw = (thread_rwlock_t *)arg;
+    rw->rw_nwaitwriters--;
+    pthread_mutex_unlock(&rw->rw_mutex);
+}
+
 int thread_rwlock_rdlock(thread_rwlock_t *rw) {
     int     result;
     if (rw->rw_magic != RW_MAGIC)
@@ -73,6 +85,8 @@ int thread_rwlock_rdlock(thread_rwlock_t *rw) {
     // a. check if writer lock b. check if some writers waiting
     while (rw->rw_refcount < 0 || rw->rw_nwaitwriters > 0) {
         rw->rw_nwaitreaders++;
+        pthread_cleanup_push(rwlock_cancel_rdwait, (void*)rw);
+        pthread_cleanup_pop(0);
         result = pthread_cond_wait(&rw->rw_condreaders, &rw->rw_mutex);
         rw->rw_nwaitreaders--;
         if (result != 0)
@@ -116,6 +130,8 @@ int thread_rwlock_wrlock(thread_rwlock_t *rw) {
     // b. current is reader lock, rw->rw_refcount > 0
     while (rw->rw_refcount != 0) {
         rw->rw_nwaitwriters++;
+        pthread_cleanup_push(rwlock_cancel_wrwait, (void*)rw);
+        pthread_cleanup_pop(0);
         result = pthread_cond_wait(&rw->rw_condwriters, &rw->rw_mutex);
         rw->rw_nwaitwriters--;
         if (result != 0)
