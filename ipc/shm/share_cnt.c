@@ -5,6 +5,7 @@
 #include <semaphore.h>
 #include <sys/mman.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -24,7 +25,8 @@ int main(int argc, char **argv){
 
     sem_init(&ptr->mutex, 1, 1);
 
-    if(fork()==0){ /*child*/
+    pid_t childfd;
+    if((childfd=fork())==0){ /*child*/
         for(int i=0; i<NLOOP; ++i){
             sem_wait(&ptr->mutex);
             fprintf(stderr, "child: %d\n", ++ptr->count);
@@ -34,12 +36,13 @@ int main(int argc, char **argv){
         exit(0);
     }
 
-    
     for(int i=0; i<NLOOP; ++i){ /*parent*/
         sem_wait(&ptr->mutex);
         fprintf(stderr, "parent: %d\n", ++ptr->count);
         sem_post(&ptr->mutex);
         usleep(1);
     }
+
+    waitpid(childfd, NULL, 0);
     exit(0);
 }
