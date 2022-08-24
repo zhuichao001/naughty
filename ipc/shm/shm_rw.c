@@ -10,6 +10,8 @@
 
 #define N 64
 
+//System V API
+
 typedef struct {
     pid_t pid;
     char buf[N];
