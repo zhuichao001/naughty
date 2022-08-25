@@ -10,6 +10,6 @@ g++ -o test_mqreceive mqreceive.c -lpthread -lrt
 #open another shell to exec
 ./test_mqsend /test1 50 16
 
-#./test_mqnotifyrecv /test1
-./test_mqreceive /test1
+./test_mqnotifyrecv /test1
+#./test_mqreceive /test1
 

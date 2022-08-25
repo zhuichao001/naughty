@@ -31,6 +31,7 @@ int main(int argc, char **argv){
 
     signal(SIGUSR1, sigusr1);
     sigev.sigev_notify = SIGEV_SIGNAL;
+    //sigev.sigev_notify_function = sigusr1;
     sigev.sigev_signo = SIGUSR1;
     mq_notify(mqd, &sigev);
 
