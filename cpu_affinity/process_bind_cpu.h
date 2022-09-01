@@ -6,7 +6,6 @@
 
 int process_bind_cpu(const int cpu_id) {
     cpu_set_t mask;
-    cpu_set_t get;
 
     CPU_ZERO(&mask);
     CPU_SET(cpu_id, &mask);
