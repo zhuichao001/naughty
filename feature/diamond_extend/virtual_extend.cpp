@@ -1,56 +1,21 @@
 #include<iostream>
-using namespace std;
 
 class Base{
-protected:
-    int value;
-public:
-    Base()=default;
-    Base(int v):
-        value(v){
-        std::cout<< "Base Called" <<std::endl;
-    }
 };
 
-class Father:virtual public Base{
-public:
-    Father()=default;
-    Father(int v):
-        Base(v){
-        std::cout<< "Father Called" <<std::endl;
-    }
-
-    void set_value(int value){
-        this->value=value;
-    }
+class Father:public virtual Base{
 }; 
 
-class Mother:virtual public Base{
-public:
-    Mother()=default;
-    Mother(int v):
-        Base(v){
-        std::cout<< "Mother Called" <<std::endl;
-    }
-    int get_value(){
-        return this->value;
-    }
+class Mother:public virtual Base{
 };
 
 class Son:public Father,public Mother{
-public:
-    Son()=default;
-    Son(int v):
-        Father(v),
-        Mother(v),
-        Base(v){ //must actively call
-        std::cout<< "Son Called" <<std::endl;
-    }
 };
 
 int main(){
-    Son s(10);
-    s.set_value(20);
-    cout<<s.get_value()<<endl;
+    std::cout<<"sizeof Base:"<<sizeof(Base)
+        <<",sizeof Father:"<<sizeof(Father)
+        <<",sizeof Mother:"<<sizeof(Mother)
+        <<",sizeof Son:"<<sizeof(Son)<<std::endl;
     return 0;
 }

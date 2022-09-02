@@ -1,5 +1,4 @@
 #include<iostream>
-using namespace std;
 
 class Base{
 protected:
@@ -50,6 +49,11 @@ public:
 int main(){
     Son s(10);
     s.set_value(20);
-    cout<<s.get_value()<<endl;
+    std::cout<<s.get_value()<<std::endl;
+
+    std::cout<<"sizeof Base:"<<sizeof(Base)
+        <<",sizeof Father:"<<sizeof(Father)
+        <<",sizeof Mother:"<<sizeof(Mother)
+        <<",sizeof Son:"<<sizeof(Son)<<std::endl;
     return 0;
 }
