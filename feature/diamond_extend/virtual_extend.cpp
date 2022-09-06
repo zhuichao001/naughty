@@ -13,7 +13,9 @@ class Son:public Father,public Mother{
 };
 
 int main(){
+    Base *b;
     std::cout<<"sizeof Base:"<<sizeof(Base)
+        <<"sizeof BasePtr:"<<sizeof(b)
         <<",sizeof Father:"<<sizeof(Father)
         <<",sizeof Mother:"<<sizeof(Mother)
         <<",sizeof Son:"<<sizeof(Son)<<std::endl;
