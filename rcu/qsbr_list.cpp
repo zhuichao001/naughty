@@ -2,6 +2,8 @@
 #include <pthread.h>
 #include <poll.h>
 
+const int N = 60000;
+
 struct node{
     int key;
     int val;
@@ -17,6 +19,7 @@ struct node{
 int list_query(const int k, int &v){
     int err = -1;
     v = -1;
+
     rcu_read_lock();
     struct node *cur = head.next;
     while(cur!=nullptr){
@@ -25,19 +28,21 @@ int list_query(const int k, int &v){
             err = 0;
             break;
         }
+        cur = cur->next;
     }
     rcu_read_unlock();
+
     return err;
 }
 
 int list_modify(const int k, const int v){
     int err = -1;
-    rcu_read_lock();
-
-    struct node *neo = new struct node(k,v,nullptr);
 
     struct node *cur = &head;
+    struct node *neo = new struct node(k,v,nullptr);
     struct node *old = nullptr;
+
+    rcu_read_lock();
     while(cur->next!=nullptr){
         if(cur->next->key==k){
             neo->next = cur->next->next;
@@ -45,6 +50,7 @@ int list_modify(const int k, const int v){
             err = 0;
             break;
         }
+        cur = cur->next;
     }
     rcu_read_unlock();
 
@@ -53,13 +59,14 @@ int list_modify(const int k, const int v){
         cur->next = neo;
         delete old;
     }
+
     return err;
 }
 
 void *run_list_query(void *arg){
     rcu_thread_online();
 
-    for(int i=0; i<1000000; ++i){
+    for(int i=0; i<N; ++i){
         int k=i;
         int v;
         list_query(i, v);
@@ -75,11 +82,11 @@ void *run_list_query(void *arg){
 void *run_list_modify(void *arg){
     rcu_thread_online();
 
-    for(int i=0; i<10000; ++i){
-        int k=i*100;
+    for(int i=0; i<1000; ++i){
+        int k=i*60;
         int v=i*1000;
         list_modify(k, v);
-        poll(nullptr, 0, 100);
+        poll(nullptr, 0, 10);
     }
 
     rcu_thread_offline();
@@ -88,7 +95,7 @@ void *run_list_modify(void *arg){
 
 void init_list(){
     struct node *tail = &head;
-    for(int i=0; i<1000000; ++i){
+    for(int i=0; i<N; ++i){
         tail->next = new struct node(i, i, nullptr);
         tail = tail->next;
     }
@@ -97,8 +104,8 @@ void init_list(){
 int main(){
     init_list();
 
-    const int N_READER = 4;
-    const int N_UPDATER = 2;
+    const int N_READER = 2;
+    const int N_UPDATER = 1;
     pthread_t pid_reader[N_READER];
     pthread_t pid_updater[N_UPDATER];
 
