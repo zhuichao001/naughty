@@ -14,7 +14,7 @@ namespace naughty{
 template<class T>
 inline T* _allocate(ptrdiff_t size, T*) {
     set_new_handler(0);
-    T* p = (T*)(::operator new((size_t)(size*sizeof(T))));
+    T* p = (T*)(::operator new((size_t)(size*sizeof(T))));  //TODO: use mempool
     if (p == 0){
         cerr << "Out Of Memory" << endl;
         exit(1);
