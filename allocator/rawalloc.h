@@ -56,19 +56,25 @@ public:
     };
 
     //hint used for locality
-    pointer allocate(size_type n, const void* hint=0) {
-        return _allocate((difference_type)n, (pointer)0);
+    pointer allocate(size_type n, const void* hint=nullptr) {
+        return _allocate((difference_type)n, (pointer)nullptr);
     }
 
-    void deallocate(pointer p, size_type n) { _deallocate(p);}
+    void deallocate(pointer p, size_type n) { 
+        _deallocate(p);
+    }
 
     void construct(pointer p, const T& value) {
         _construct(p, value);
     }
 
-    void destroy(pointer p) {_destroy(p);}
+    void destroy(pointer p) {
+        _destroy(p);
+    }
 
-    pointer address(reference x) {return (pointer)&x;}
+    pointer address(reference x) {
+        return (pointer)&x;
+    }
 
     const_pointer const_address(const_reference x) {
         return (const_pointer)&x;
