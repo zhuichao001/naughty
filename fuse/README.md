@@ -29,3 +29,9 @@ struct fuse_operations {
 };
 
 ```
+
+## useage
+```
+    mkdir tmp
+    ./sunfs tmp
+```
