@@ -43,8 +43,8 @@ typedef struct rwlock_t{
         if(rwcnt.load(std::memory_order_acquire)!=0){
             return -1;
         }
-        int none = 0;
-        if(rwcnt.compare_exchange_strong(none, -1, std::memory_order_acq_rel)){
+        int writers = 0;
+        if(rwcnt.compare_exchange_strong(writers, -1, std::memory_order_acq_rel)){
             return 0;
         }
         return -1;
