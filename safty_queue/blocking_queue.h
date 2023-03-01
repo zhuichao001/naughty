@@ -1,4 +1,3 @@
-#include <iostream>
 #include <deque>
 #include <mutex>
 #include <condition_variable>
@@ -28,17 +27,11 @@ public:
     }
 
     T pop() {
-        //std::cout << "to pop.1" << std::endl;
         std::unique_lock<std::mutex> lock(mutex_);
-        //std::cout << "to pop.2" << std::endl;
         convar_have_.wait(lock, [=]{return !queue_.empty();});
-        //std::cout << "to pop.3" << std::endl;
         T t(std::move(queue_.back()));
-        //std::cout << "to pop.4" << std::endl;
         queue_.pop_back();
-        //std::cout << "to pop.5" << std::endl;
         convar_rest_.notify_one();
-        //std::cout << "to pop.6" << std::endl;
         return t;
     }
 };
