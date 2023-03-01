@@ -12,6 +12,7 @@ private:
     std::mutex      mutex_;
     std::condition_variable convar_rest_;
     std::condition_variable convar_have_;
+
 public:
     BlockingQueue(int n):
         capacity_(n){
