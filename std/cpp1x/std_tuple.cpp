@@ -15,7 +15,7 @@ void case1(){
     std::cout       << "ID: 0, "
         << "GPA: "  << std::get<0>(student) << ", "
         << "grade: "<< std::get<1>(student) << ", "
-        << "name: " << std::get<2>(student) << '\n';
+        << "name: " << std::get<2>(student) << std::endl;
 }
 
 void case2(){
@@ -24,18 +24,18 @@ void case2(){
     std::string name;
     std::tie(gpa, grade, name) = get_student(1);
     std::cout       << "ID: 1, "
-        << "GPA: "  << gpa << ", "
-        << "grade: "<< grade << ", "
-        << "name: " << name << '\n';
+        << "GPA: "  << gpa      << ", "
+        << "grade: "<< grade    << ", "
+        << "name: " << name     << std::endl;
 }
 
 void case3(){
     //c++17 feature:
     auto [ gpa, grade, name ] = get_student(2);
     std::cout       << "ID: 2, "
-        << "GPA: "  << gpa << ", "
-        << "grade: "<< grade << ", "
-        << "name: " << name << '\n';
+        << "GPA: "  << gpa      << ", "
+        << "grade: "<< grade    << ", "
+        << "name: " << name     << std::endl;
 }
 
 int main() {
