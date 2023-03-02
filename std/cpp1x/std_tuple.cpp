@@ -10,6 +10,18 @@ std::tuple<double, char, std::string> get_student(int id) {
     throw std::invalid_argument("id");
 }
 
+void case0(){
+    std::tuple<double, char, std::string> st;
+    //...
+    st = {2.9, 'D', "Jams"}; //assign method-1
+    st = std::make_tuple(2.9, 'D', "Jams"); //assign method-2
+
+    std::cout       << "ID: nil, "
+        << "GPA: "  << std::get<0>(st) << ", "
+        << "grade: "<< std::get<1>(st) << ", "
+        << "name: " << std::get<2>(st) << std::endl;
+}
+
 void case1(){
     auto student = get_student(0);
     std::cout       << "ID: 0, "
@@ -39,6 +51,7 @@ void case3(){
 }
 
 int main() {
+    case0();
     case1();
     case2();
     case3();
