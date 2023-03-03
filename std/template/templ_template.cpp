@@ -12,10 +12,12 @@ public:
 };
 
 template <typename T, template <typename> class CONTAI>
-void Stack<T,CONTAI>::push (T const& e) {
+void Stack<T,CONTAI>::push(T const& e){
     elements.push_back(e);
 }
 
 int main(){
+    Stack<int> stack;
+    stack.push(6);
     return 0;
 }
