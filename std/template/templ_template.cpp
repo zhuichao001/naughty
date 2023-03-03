@@ -11,6 +11,11 @@ public:
     bool empty() const { return elements.empty(); }
 };
 
+template <typename T, template <typename> class CONTAI>
+void Stack<T,CONTAI>::push (T const& e) {
+    elements.push_back(e);
+}
+
 int main(){
     return 0;
 }
