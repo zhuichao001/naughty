@@ -1,7 +1,7 @@
 #include <iostream>
 
 template<typename T>
-class Storm{
+class SomeType{
 public: 
     typedef const T Retype;
 };
@@ -29,7 +29,7 @@ class Derived : public Base<T> {
 };
 
 int main(){
-    Derived<Storm<int>> a(10);
+    Derived<SomeType<int>> a(10);
     a.func1(); 
     a.func2(); 
     a.func3(); 
