@@ -1,6 +1,6 @@
 #include <deque>
 
-template <typename T, template <typename ELEM> class CONTAI = std::deque >
+template <typename T, template <typename> class CONTAI = std::deque >
 class Stack {
 private:
     CONTAI<T> elements;
