@@ -51,7 +51,6 @@ Stack<T> & Stack<T>::operator=(const Stack<T2> &src){
     return *this;
 }
 
-
 int main(){
     Stack<double> dstack;
     Stack<int> istack;
