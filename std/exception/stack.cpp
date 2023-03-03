@@ -1,3 +1,4 @@
+#include <iostream>
 #include <vector>
 #include <stdexcept>
 
@@ -23,5 +24,11 @@ public:
 int main(){
     Stack<int> stack;
     //stack.push(6);
-    stack.pop();
+    try{
+        stack.pop();
+    }catch(std::exception const& ex){
+        std::cerr << "Catch exception:" << ex.what() << std::endl;
+        return -1;
+    }
+    return 0;
 }
