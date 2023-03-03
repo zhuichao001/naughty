@@ -6,6 +6,10 @@ template <typename T>
 class Stack{
     std::vector<T> elements;
 public:
+    bool empty() const {
+        return elements.empty();
+    }
+
     void push(T const &t){
         elements.push_back(t);
     }
@@ -19,4 +23,16 @@ public:
         elements.pop_back();
         return e; 
     }
+
+    T top(){
+        if(elements.size()==0){
+            throw std::out_of_range("Stack is empty.");
+        }
+
+        return elements.front();
+    }
 };
+
+int main(){
+    Stack<int> stack;
+}
