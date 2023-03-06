@@ -29,6 +29,10 @@ public:
         return *this;
     }
 
+    void setId(int i){
+        id = i;
+    }
+
     void print(){
         printf("id:%d, name:%s\n", id, name.c_str());
     }
@@ -37,9 +41,25 @@ private:
     std::string name;
 };
 
-int main(){
+void deal(Foo foo){
+    foo.setId(666);
+}
+
+void test1(){
     Foo foo(123,"abc");
     Foo back = foo; //copy constructor
     back.print();
+}
+
+void test2(){
+    Foo in;
+    in.setId(333);
+    printf("-----------\n");
+    deal(in);
+}
+
+int main(){
+    //test1();
+    test2();
     return 0;
 }
