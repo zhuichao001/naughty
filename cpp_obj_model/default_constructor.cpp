@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+//编译器帮默认构造函数中将会调用成员变量的默认构造函数
 class Foo {
 public:
     Foo(){

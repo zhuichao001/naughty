@@ -10,8 +10,7 @@ public:
     }
 };
 
-class Bar{
-    Foo foo;
+class Bar: public Foo{
     const std::string name;
     char *ptr;
 public:

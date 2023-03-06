@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+//编译器按顺序在其默认构造函数中将会调用成员变量的默认构造函数
+
 class Desk {
 public:
     Desk(){
