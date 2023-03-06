@@ -2,7 +2,8 @@
 
 class X{
 public :
-    X(){ printf("X constructed.\n"); }
+    X(){ printf("X() constructed.\n"); }
+    X(int i):v(i){printf("X(int) constructed.\n"); }
     ~X(){ printf("X destroyed.\n");}
     int v = 0;
 };
@@ -23,8 +24,14 @@ X f(){
  * finish f()
  * X destroyed.
  * */
-int main(){
+void test1(){
     X x = f();
     printf("finish f()\n");
+}
+
+int main(){
+    test1();
+    printf("---------\n");
+    test2();
     return 0;
 }
