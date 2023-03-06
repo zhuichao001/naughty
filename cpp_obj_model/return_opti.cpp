@@ -1,5 +1,7 @@
 #include <stdio.h>
 
+// Named Return Value（NRV）优化
+
 class X{
 public :
     X(){ printf("X() constructed.\n"); }
