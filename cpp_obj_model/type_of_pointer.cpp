@@ -30,10 +30,10 @@ protected:
     enum Dances{Jump=1, Run=2, Dive=3};
     Dances known;
     int cell_block;
-    friend void test();
+    friend void test1();
 };
 
-void test(){
+void test1(){
     Bear b("Yogi");
     ZooAnimal *pz = &b;
     Bear *pb = &b;
@@ -56,7 +56,14 @@ void test(){
     pb->cell_block;
 }
 
+void test2(){
+    Bear b("Yogi");
+    ZooAnimal z = b; //这会引起对象切割（Sliced）
+    z.rotate();
+}
+
 int main(){
-    test();
+    //test1();
+    test2();
     return 0;
 }
