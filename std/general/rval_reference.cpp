@@ -26,8 +26,10 @@ public:
 
 void foo(B && b){
     B first = b;
+    printf("----------\n");
+    B second = std::forward<B>(b);
     printf("==========\n");
-    B second = std::move(b);
+    B third = std::move(b);
 }
 
 int main(){
