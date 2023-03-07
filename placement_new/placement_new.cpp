@@ -3,22 +3,34 @@
 
 using namespace std;
 
-
-int main() {
-    char buf[sizeof(Base)*128];
-    Base *b = new(buf) Base(2);
+void test1(){
+    char buf[sizeof(Base)*1];
+    Base *b = ::new(buf) Base(2);
     b->print();
     b->~Base();
-
-    Base *bs = new(buf)Base(); //replacement new
-    for(int i=0; i<128; ++i){
-        new(bs+i) Base(i);
-    }
-
-    for(int i=119; i>=0; --i){
-        (bs+i)->~Base();
-    }
-    return 0;
 }
 
+void test2(){
+    const int N = 128;
+    char *buff = static_cast<char*>(::operator new(sizeof(Base)*N));
+    Base *bs = ::new(buff+0) Base(); //replacement new
+    for(int i=0; i<N; ++i){
+        ::new(bs+i) Base(i);
+    }
 
+    for(int i=N-1; i>=0; --i){
+        (bs+i)->~Base();
+    }
+}
+
+void test3(){
+    Base *b = new Base(333);
+    delete b;
+}
+
+int main() {
+    //test1();
+    //test2();
+    test3();
+    return 0;
+}
