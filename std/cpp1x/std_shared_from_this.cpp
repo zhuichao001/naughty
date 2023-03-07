@@ -33,4 +33,6 @@ int main() {
     std::shared_ptr<Bad> bp1 = std::make_shared<Bad>();
     std::shared_ptr<Bad> bp2 = bp1->getptr();
     std::cout << "bp2.use_count() = " << bp2.use_count() << '\n';
+
+    return 0;
 }
