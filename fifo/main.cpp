@@ -3,8 +3,10 @@
 #include <thread>
 
 
-ufifo u(117);
+ufifo u(1117);
 const int N = 10000*26;
+
+bool debug = false;
 
 void write(){
     char tmp[] = "abcdefghijklmnopqrstuvwxyz";
@@ -18,10 +20,11 @@ void write(){
         int len = u.push((uint8_t*)src+pos, N-pos);
         if(len==0)continue;
 
+        if(debug)
         { //print what's pushed
             char backup = src[pos+len];
             src[pos+len] = 0;
-            fprintf(stderr, "write len=%d, data=%s\n", len, src+pos);
+            //fprintf(stderr, "write len=%d, data=%s\n", len, src+pos);
             src[pos+len] = backup;
         }
 
@@ -36,7 +39,9 @@ void read(){
         if(len==0)continue;
         dst[pos+len] = 0;
 
-        fprintf(stderr, "read len=%d, data=%s\n", len, dst+pos);
+        if(debug){
+            fprintf(stderr, "read len=%d, data=%s\n", len, dst+pos);
+        }
 
         pos+=len;
     }
