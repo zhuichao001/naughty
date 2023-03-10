@@ -1,19 +1,19 @@
-//#include <memory>
+#include <algorithm>
 #include <stdio.h>
 #include "smart_ptr.h"
-
 
 void test0(){ //normal case
     shared_ptr<int> m;
     {
         shared_ptr<int> p(new int);
         *p = 123;
-        printf("val:%d, use_count:%d\n", *p, p.use_count());
+        printf("val:%d, p use_count:%d\n", *p, p.use_count());
 
         m = p;
-        printf("val:%d, use_count:%d\n", *m, m.use_count());
+        printf("val:%d, p use_count:%d\n", *p, p.use_count());
+        printf("val:%d, m use_count:%d\n", *m, m.use_count());
     }
-    printf("val:%d, use_count:%d\n", *m, m.use_count());
+    printf("val:%d, m use_count:%d\n", *m, m.use_count());
 }
 
 void test1(){ //wrong case
@@ -31,6 +31,6 @@ void test2(){ //wrong case
 }
 
 int main(){
-    test1();
+    test0();
     return 0;
 }

@@ -46,9 +46,9 @@ class shared_ptr{
     template<class> class weak_ptr;
     friend class weak_ptr<T>;
 public:
-    shared_ptr(T* p = nullptr) //TODO: support deleter
-        :_px(p)
-        ,_pn(new ref_count()) {
+    shared_ptr(T* p = nullptr):
+        _px(p),
+        _pn(new ref_count()) {
         if(p!=nullptr){
             _pn->inc_shared();
         }
@@ -58,15 +58,15 @@ public:
         release();
     }
 
-    shared_ptr(const shared_ptr<T>& r)
-        :_px(r._px)
-        ,_pn(r._pn) {
+    shared_ptr(const shared_ptr<T>& r):
+        _px(r._px),
+        _pn(r._pn) {
         r._pn->inc_shared();
     }
 
-    shared_ptr(const weak_ptr<T>& w)
-        :_px(w._px)
-        ,_pn(w._pn) {
+    shared_ptr(const weak_ptr<T>& w):
+        _px(w._px),
+        _pn(w._pn) {
         _pn->inc_shared();
     }
 
@@ -111,7 +111,6 @@ private:
         _pn->dec_shared();
         if(_pn->shared_count()==0){
             delete _px;
-
             if(_pn->weak_count()==0){
                 delete _pn;
             }
@@ -197,10 +196,18 @@ public:
         }
     }
 
+    void reset(){
+        release();
+    }
+
+    void swap(weak_ptr& r){
+        std::swap(_px, r._px);
+        std::swap(_pn, r._pn);
+    }
+
 private:
     T *_px;
     ref_count *_pn;
 };
-
 
 #endif
