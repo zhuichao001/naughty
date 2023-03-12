@@ -3,14 +3,16 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/syscall.h>
 
 //conclusion: Will not extend sub threads from parent process
 
 int gi = 0;
 
 void *print(void *args){
+    pid_t pid = (pid_t)syscall(SYS_gettid);
     while(1){
-        printf("%d\n", gi);
+        printf("gi:%d, thread_id:%d\n", gi, pid);
         sleep(1);
     }
     return nullptr;
