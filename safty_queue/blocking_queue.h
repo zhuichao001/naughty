@@ -2,7 +2,7 @@
 #include <mutex>
 #include <condition_variable>
 
-//Thread safty blocking queue
+//Thread-safe blocking queue
 
 template <typename T>
 class BlockingQueue {
@@ -21,7 +21,7 @@ public:
     void push(T const& t) {
         {
             std::unique_lock<std::mutex> lock(mutex_);
-            cv_notfull_.wait(lock, [=]{return queue_.size()!=capacity_;});
+            cv_notfull_.wait(lock, [&]{return queue_.size()!=capacity_;});
             queue_.push_front(t);
         }
         cv_notempty_.notify_one();
@@ -29,7 +29,7 @@ public:
 
     T pop() {
         std::unique_lock<std::mutex> lock(mutex_);
-        cv_notempty_.wait(lock, [=]{return !queue_.empty();});
+        cv_notempty_.wait(lock, [&]{return !queue_.empty();});
         T t(std::move(queue_.back()));
         queue_.pop_back();
         cv_notfull_.notify_one();
