@@ -1,39 +1,40 @@
-#include<map>
-#include<vector>
-#include<map>
-#include<algorithm>
-#include<iostream>
-
-using namespace std;
+#include <map>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <iostream>
 
 //for min-heap
-bool cmp_pair(const pair<int,int> &a, const pair<int,int> &b){
+bool comparer(const std::pair<int,int> &a, const std::pair<int,int> &b){
     return a.second > b.second;
 }
 
-void print_heap(vector<pair<int,int>> &v){
-    cout << "start print----" << endl;
+void print_heap(std::vector<std::pair<int,int>> &v){
+    std::cout << "start print----" << std::endl;
     for (auto e : v) {
-        cout << e.first << ':' << e.second << endl;
+        std::cout << e.first << ':' << e.second << std::endl;
     }
-    cout << "end print----" << endl;
+    std::cout << "end print----" << std::endl;
 }
 
 int main(){
-    vector<pair<int,int>> v;
-    v.push_back(make_pair(2,1));
-    v.push_back(make_pair(3,8));
-    v.push_back(make_pair(6,2));
-    v.push_back(make_pair(12,10));
-    make_heap(v.begin(), v.end(), cmp_pair);
+    std::vector<std::pair<int,int>> v;
+    v.push_back(std::make_pair(2,1));
+    v.push_back(std::make_pair(3,8));
+    v.push_back(std::make_pair(6,2));
+    v.push_back(std::make_pair(12,10));
+    std::make_heap(v.begin(), v.end(), comparer);
+
+    v.push_back(std::make_pair(7,3));
+    std::push_heap(v.begin(), v.end(), comparer);
 
     while(!v.empty()){
-        pop_heap(v.begin(), v.end(), cmp_pair);
-        pair<int, int> cur = v.back();
+        std::pop_heap(v.begin(), v.end(), comparer);
+        std::pair<int, int> cur = v.back();
         v.pop_back();
         int point = cur.first;
         int cost = cur.second;
-        cout<< "pop point:" << point << ",cost:" << cost << endl;
+        std::cout<< "pop point:" << point << ",cost:" << cost << std::endl;
     }
 
     return 0;
