@@ -11,7 +11,6 @@ try:
 except NameError:
     unicode = str
 
-
 rtld = ctypes.cdll.LoadLibrary(None)
 
 def shm_open(name):
@@ -30,9 +29,7 @@ def shm_open(name):
 
     if result == -1:
         raise RuntimeError(os.strerror(ctypes.get_errno()))
-
     return result
-
 
 def shm_unlink(name):
     if isinstance(name, bytes):
@@ -45,8 +42,6 @@ def shm_unlink(name):
     result = rtld.shm_unlink(name)
     if result == -1:
         raise RuntimeError(os.strerror(ctypes.get_errno()))
-
-
 
 fid = shm_open("tmp.shm_create")
 size = 65536*4096
