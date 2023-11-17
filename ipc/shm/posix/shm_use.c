@@ -17,6 +17,11 @@ int main(int argc, char **argv){
 
     char *ptr = (char*)mmap(NULL, MAP_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 
+    const char *dat = "hello, world.";
+    memcpy(ptr, dat, strlen(dat));
+
+    sleep(600);
+
     shm_unlink(path);
     _exit(0);
 }
