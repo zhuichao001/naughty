@@ -1,14 +1,14 @@
 from distutils.core import setup, Extension
 
-module1 = Extension('shm_open',
+module1 = Extension('shmem',
         define_macros = [('MAJOR_VERSION', '1'),
             ('MINOR_VERSION', '0')],
         include_dirs = ['/usr/local/include'],
         libraries = ['rt'],
         library_dirs = ['/usr/local/lib'],
-        sources = ['shm_open.c'])
+        sources = ['shmem.c'])
 
-setup (name = 'shm_open',
+setup (name = 'shmem',
         version = '1.0',
         description = 'This is a demo package',
         author = 'Martin v. Loewis',
