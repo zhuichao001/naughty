@@ -12,6 +12,7 @@ all:
 	g++ -g -Wall -std=c++17 -pthread -o test_shared_mutex std_shared_mutex.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_unique_lock std_unique_lock.cpp  
 	g++ -g -Wall -std=c++11 -pthread -o test_array std_array.cpp  
+	g++ -g -Wall -std=c++17 -o test_par_sort std_par_sort.cpp  
 clean:
 	rm -f test_move
 	rm -f test_bind
@@ -26,3 +27,4 @@ clean:
 	rm -f test_shared_mutex
 	rm -f test_unique_lock
 	rm -f test_array
+	rm -f test_par_sort
