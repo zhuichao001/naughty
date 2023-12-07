@@ -6,7 +6,7 @@ module1 = Extension('shmem',
         include_dirs = ['/usr/local/include'],
         libraries = ['rt'],
         library_dirs = ['/usr/local/lib'],
-        sources = ['shmem.c'])
+        sources = ['shmem_py.c'])
 
 setup (name = 'shmem',
         version = '1.0',
