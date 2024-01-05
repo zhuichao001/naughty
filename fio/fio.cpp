@@ -321,4 +321,40 @@ int flist(const char *path, std::vector<std::string> &files) {
     return 0;
 }
 
+int dircap(const char* path){
+    DIR *dp;
+    struct dirent *entry;
+    struct stat statbuf;
+    int total_size = 0;
+
+    if ((dp = opendir(path)) == NULL) {
+        fprintf(stderr, "Cannot open dir: %s\n", path);
+        exit(0);
+    }
+
+    //fprintf(stderr, "to open dir: %s\n", path);
+    chdir(path);
+
+    while ((entry = readdir(dp)) != NULL) {
+        lstat(entry->d_name, &statbuf);
+        if (S_ISDIR(statbuf.st_mode)) {
+            if (strcmp(".", entry->d_name) == 0 || strcmp("..", entry->d_name) == 0) {
+                continue;
+            }
+            std::string subpath(path);
+            subpath+="/";
+            subpath+=entry->d_name;
+            total_size += dircap(subpath.c_str());
+            //fprintf(stderr, "dir %s: %d\n", entry->d_name, sub_size);
+        } else {
+            total_size += statbuf.st_size;
+            //fprintf(stderr, "file %s: %d\n", entry->d_name, statbuf.st_size);
+        }
+    }
+
+    chdir("..");
+    closedir(dp);
+    return total_size;
+}
+
 } // end of namespace fio

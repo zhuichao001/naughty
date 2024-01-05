@@ -24,9 +24,15 @@ void test3(){
     fio::fcopy(path, "./out.txt");
 }
 
+void test4(){
+    int total = fio::dircap("/root/workspace/src/github.com/zhuichao001/naughty/fio/");
+    printf("total:%d\n", total);
+}
+
 int main() {
-    test1();
-    test2();
-    test3();
+    //test1();
+    //test2();
+    //test3();
+    test4();
     return 0;
 }

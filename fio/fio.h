@@ -48,15 +48,17 @@ int frename(const char * src, const char * dst);
 
 bool fexist(const char *path);
 
+inline int flseek(const int fd, const int offset) { return ::lseek(fd, offset, SEEK_SET); }
+
+inline int fclose(int fd) { return ::close(fd); }
+
 bool dexist(const char *dir);
 
 int mkdir(const char* path);
 
 int flist(const char *path, std::vector<std::string> &files);
 
-inline int flseek(const int fd, const int offset) { return ::lseek(fd, offset, SEEK_SET); }
-
-inline int fclose(int fd) { return ::close(fd); }
+int dircap(const char* path);
 
 } // end of namespace fio
 
