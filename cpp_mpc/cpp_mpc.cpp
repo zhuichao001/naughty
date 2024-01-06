@@ -1,5 +1,6 @@
 #include <iostream>
 
+//模版元编程
 template<int N>
 struct Factorial {
     static constexpr int value = N * Factorial<N - 1>::value;
