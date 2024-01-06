@@ -19,8 +19,7 @@ typedef struct MEM_INFO Mem_info;
 void  get_mem_occupy (Mem_info *o)
 {
     FILE* fpMemInfo = fopen("/proc/meminfo", "r");
-    if (NULL == fpMemInfo)
-    {
+    if (NULL == fpMemInfo) {
         return ;
     }
     int i = 0;
@@ -29,44 +28,28 @@ void  get_mem_occupy (Mem_info *o)
     char line[1024];
     int nFiledNumber = 2;
     int nMemberNumber = 5;
-    while (fgets(line, sizeof(line) - 1, fpMemInfo))
-    {
-        if (sscanf(line, "%s%u", name, &value) != nFiledNumber)
-        {
+    while (fgets(line, sizeof(line) - 1, fpMemInfo)) {
+        if (sscanf(line, "%s%u", name, &value) != nFiledNumber) {
             continue;
         }
-        if (0 == strcmp(name, "MemTotal:"))
-        {
-            ++i;
+        if (0 == strcmp(name, "MemTotal:")) {
             o->total = value;
-        }
-        else if (0 == strcmp(name, "MemFree:"))
-        {
-            ++i;
+        } else if (0 == strcmp(name, "MemFree:")) {
             o->free = value;
-        }
-        else if (0 == strcmp(name, "MemAvailable:"))
-        {
-            ++i;
+        } else if (0 == strcmp(name, "MemAvailable:")) {
             o->available = value;
-        }
-        else if (0 == strcmp(name, "Buffers:"))
-        {
-            ++i;
+        } else if (0 == strcmp(name, "Buffers:")) {
             o->buffers = value;
-        }
-        else if (0 == strcmp(name, "Cached:"))
-        {
-            ++i;
+        } else if (0 == strcmp(name, "Cached:")) {
             o->cached = value;
         }
-        if (i == nMemberNumber)
-        {
+
+        if (++i == nMemberNumber) {
             break;
         }
     }
     system("free");
-    system("cat /proc/meminfo");
+    //system("cat /proc/meminfo");
     printf("MemTotal      : %d\n",o->total);
     printf("MemFree       : %d\n",o->free);
     printf("MemAvailable  : %d\n",o->available);
