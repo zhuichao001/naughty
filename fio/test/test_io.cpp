@@ -29,10 +29,15 @@ void test4(){
     printf("total:%d\n", total);
 }
 
+void test5(){
+    fio::mkdir("/tmp/a/b/c");
+}
+
 int main() {
     //test1();
     //test2();
     //test3();
-    test4();
+    //test4();
+    test5();
     return 0;
 }
