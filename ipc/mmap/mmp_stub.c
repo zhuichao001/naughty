@@ -36,20 +36,24 @@ int main(int argc, char **argv){
     char *ptr = (char*)(struct shared_t *)mmap(NULL, FILE_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     memcpy(ptr, "hello..", 8);
 
-    pid_t pid;
-    if((pid=fork())==0){ /*child*/
-        char fdstr[10];
-    memset(fdstr,0,10);
-    sprintf(fdstr,"%d", fd);
-    printf("before fd:%s\n", fdstr);
-    if(execlp("python", "python", "worker.py", fdstr, (char *)0)){
-        perror("failed");
-    }
-        //exit(0);
-    }else{ /*parent*/
-        waitpid(pid, NULL, 0);
-        close(fd);
-    }
+    ftruncate(fd, FILE_SIZE+FILE_SIZE);
+    char *ptr2 = (char*)(struct shared_t *)mmap(NULL, FILE_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, FILE_SIZE);
+    memcpy(ptr2, "world..", 8);
+
+    //pid_t pid;
+    //if((pid=fork())==0){ /*child*/
+    //    char fdstr[10];
+    //memset(fdstr,0,10);
+    //sprintf(fdstr,"%d", fd);
+    //printf("before fd:%s\n", fdstr);
+    //if(execlp("python", "python", "worker.py", fdstr, (char *)0)){
+    //    perror("failed");
+    //}
+    //    //exit(0);
+    //}else{ /*parent*/
+    //    waitpid(pid, NULL, 0);
+    //    close(fd);
+    //}
 
     exit(0);
 }
