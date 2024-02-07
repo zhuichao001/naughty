@@ -9,8 +9,10 @@ void test_lock_inmem(){
 
     madvise(m.data(), m.size(), MADV_WILLNEED|MAP_POPULATE|MAP_NONBLOCK);
 
-    //char *buf = new char[20<<20];
-    //m.read(0, buf, 20<<20);
+    mlock(m.data(), m.size());
+
+    char *buf = new char[20<<20];
+    m.read(0, buf, 20<<20);
 }
 
 void test_lock_notmem(){
