@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <memory.h>
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/types.h>
@@ -7,7 +8,7 @@
 #include <fcntl.h>
 
 #define FILE_MODE 0X766
-#define MAP_SIZE 65536*4096
+#define MAP_SIZE 1*4096
 
 int main(int argc, char **argv){
     int flags = O_RDWR | O_CREAT;
@@ -19,6 +20,8 @@ int main(int argc, char **argv){
 
     const char *dat = "hello, world.";
     memcpy(ptr, dat, strlen(dat));
+
+    char *ptr2 = (char*)mmap(NULL, MAP_SIZE, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 4093);
 
     sleep(600);
 
