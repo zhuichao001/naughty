@@ -14,7 +14,6 @@
 int main(int argc,char* argv[]) {
     char* data;
     int fd = shm_open("shm2", O_CREAT|O_RDWR, 0777);
-    int fd2 = shm_open("shm3", O_CREAT|O_RDWR, 0777);
     //int fd = open("/dev/shm/shm2", O_CREAT|O_RDWR, 0777);
     if (fd < 0) {
         printf("shm_open failed!\n");

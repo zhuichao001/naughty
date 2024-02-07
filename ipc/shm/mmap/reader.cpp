@@ -17,6 +17,7 @@ int main(int argc, char* argv[])
 {
     char *data;
     int fd = shm_open("shm2", O_CREAT|O_RDWR, 0777);
+    //int fd = shm_open("shm2", O_RDWR, 0777);
     if(fd < 0){
         perror("shm01 open error");
     }
