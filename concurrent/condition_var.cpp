@@ -27,9 +27,7 @@ int main() {
         std::thread::id pid = std::this_thread::get_id();
         while (true) {
             std::unique_lock<std::mutex> lock(mtx);
-            while (pipe.empty()) {  // avoid fakse awaken
-                cv.wait(lock);
-            }
+            cv.wait(lock, [&pipe](){return !pipe.empty();});
             lock.unlock(); // temporarily unlock for producers continue production
 
             std::this_thread::sleep_for(std::chrono::milliseconds(200));
