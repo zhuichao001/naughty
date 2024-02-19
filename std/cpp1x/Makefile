@@ -14,6 +14,7 @@ all:
 	g++ -g -Wall -std=c++11 -pthread -o test_array std_array.cpp  
 	g++ -g -Wall -std=c++17 -o test_par_sort std_par_sort.cpp  
 	g++ -g -Wall -std=c++17 -o test_fold_expr fold_expr.cpp  
+	g++ -g -Wall -std=c++17 -o test_std_scoped_lock std_scoped_lock.cpp -lpthread
 clean:
 	rm -f test_move
 	rm -f test_bind
@@ -28,4 +29,6 @@ clean:
 	rm -f test_shared_mutex
 	rm -f test_unique_lock
 	rm -f test_array
+	rm -f test_par_sort
 	rm -f test_fold_expr
+	rm -f test_std_scoped_lock
