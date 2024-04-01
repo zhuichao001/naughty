@@ -1,16 +1,25 @@
-#include <stdio.h>
+#include <iostream>
 #include <functional>
 
-
-//std::bind and std::thread must use std::ref to enable pass by reference
-
-void add(int a, int b, int &sum) {
-    sum = a + b;
+void fun(int& _a, int& _b, int _c)
+{
+    _a++;
+    _b++;
+    _c++; 
+    std::cout << "in fun a:" << _a << " b:" << _b << " c:" << _c << std::endl;
 }
 
-int main(){
-    int a=3, b=5, sum=0;
-    add(a, b, std::ref(sum));
-    printf("sum of %d and %d is %d\n", a, b, sum);
+int main()
+{
+    int a = 1, b = 1, c = 1;
+    auto b_fun = std::bind(fun, a, std::ref(b), std::ref(c));
+    b_fun();
+
+    std::cout << "after fun a:" << a << " b:" << b << " c:" << c << std::endl;
     return 0;
 }
+
+/* output:
+ * in fun a:2 b:2 c:2
+ * after fun a:1 b:2 c:1
+ * */

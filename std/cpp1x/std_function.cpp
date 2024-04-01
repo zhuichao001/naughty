@@ -3,9 +3,6 @@
 
 using namespace std;
 
-//function wrapper
-std::function<int(int)> mathcall;
-
 int normal(int k) {
     return -k;
 }
@@ -27,6 +24,8 @@ public:
 };
 
 int main() {
+    std::function<int(int)> mathcall;
+
     mathcall = normal;
     cout << "normal:" << mathcall(1) << endl;
 
