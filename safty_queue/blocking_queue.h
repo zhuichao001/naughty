@@ -28,10 +28,12 @@ public:
     }
 
     T pop() {
-        std::unique_lock<std::mutex> lock(mutex_);
-        cv_notempty_.wait(lock, [&]{return !queue_.empty();});
-        T t(std::move(queue_.back()));
-        queue_.pop_back();
+        {
+            std::unique_lock<std::mutex> lock(mutex_);
+            cv_notempty_.wait(lock, [&]{return !queue_.empty();});
+            T t(std::move(queue_.back()));
+            queue_.pop_back();
+        }
         cv_notfull_.notify_one();
         return t;
     }
